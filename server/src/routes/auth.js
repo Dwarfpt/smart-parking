@@ -88,31 +88,42 @@ router.post(
         return res.status(401).json({ message: 'Invalid email or password.' });
       }
 
-      // Генерация и отправка OTP для входа
-      const otp = generateOTP();
-      user.otpCode = otp;
-      user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
-      await user.save();
+      // Если 2FA включена — отправляем OTP
+      if (user.twoFactorEnabled) {
+        const otp = generateOTP();
+        user.otpCode = otp;
+        user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+        await user.save();
 
-      await sendOTP(email, otp, 'login');
+        await sendOTP(email, otp, 'login');
 
-      // Временный токен
-      const tempToken = jwt.sign({ id: user._id, role: user.role, pendingOtp: true }, config.jwtSecret, {
-        expiresIn: '15m',
-      });
+        const tempToken = jwt.sign({ id: user._id, role: user.role, pendingOtp: true }, config.jwtSecret, {
+          expiresIn: '15m',
+        });
 
-      const response = {
-        message: 'OTP sent to your email.',
-        requireOtp: true,
-        tempToken,
-      };
+        const response = {
+          message: 'OTP sent to your email.',
+          requireOtp: true,
+          tempToken,
+        };
 
-      // В dev-режиме возвращаем OTP для тестирования
-      if (config.nodeEnv === 'development' || config.nodeEnv === 'test') {
-        response.otp = otp;
+        if (config.nodeEnv === 'development' || config.nodeEnv === 'test') {
+          response.otp = otp;
+        }
+
+        return res.json(response);
       }
 
-      res.json(response);
+      // 2FA выключена — выдаём токен сразу
+      const token = jwt.sign({ id: user._id, role: user.role }, config.jwtSecret, {
+        expiresIn: config.jwtExpiresIn,
+      });
+
+      res.json({
+        message: 'Login successful',
+        token,
+        user: user.toJSON(),
+      });
     } catch (error) {
       console.error('Ошибка входа:', error);
       res.status(500).json({ message: 'Server error during login.' });

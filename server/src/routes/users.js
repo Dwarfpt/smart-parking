@@ -114,6 +114,26 @@ router.post(
   }
 );
 
+// — Включение/выключение 2FA —
+router.put('/toggle-2fa', async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    user.twoFactorEnabled = !user.twoFactorEnabled;
+    await user.save();
+
+    res.json({
+      message: user.twoFactorEnabled
+        ? 'Two-factor authentication enabled.'
+        : 'Two-factor authentication disabled.',
+      twoFactorEnabled: user.twoFactorEnabled,
+      user: user.toJSON(),
+    });
+  } catch (error) {
+    console.error('Ошибка переключения 2FA:', error);
+    res.status(500).json({ message: 'Server error.' });
+  }
+});
+
 // — Баланс —
 router.get('/balance', async (req, res) => {
   try {

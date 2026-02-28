@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { userAPI, bookingAPI } from '../../services/api';
-import { User, Wallet, History, Eye, EyeOff, QrCode } from 'lucide-react';
+import { User, Wallet, History, Eye, EyeOff, QrCode, Shield } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
 export default function ProfilePage() {
@@ -108,13 +108,13 @@ export default function ProfilePage() {
       </div>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
-        {['profile', 'password', 'topup', 'history', 'qrcodes'].map(t => (
+        {['profile', 'password', 'security', 'topup', 'history', 'qrcodes'].map(t => (
           <button
             key={t}
             className={`btn ${tab === t ? 'btn-primary' : 'btn-secondary'} btn-sm`}
             onClick={() => setTab(t)}
           >
-            {{ profile: 'Данные', password: 'Пароль', topup: 'Пополнить', history: 'История', qrcodes: 'QR-коды' }[t]}
+            {{ profile: 'Данные', password: 'Пароль', security: 'Безопасность', topup: 'Пополнить', history: 'История', qrcodes: 'QR-коды' }[t]}
           </button>
         ))}
       </div>
@@ -174,6 +174,37 @@ export default function ProfilePage() {
             </div>
             <button type="submit" className="btn btn-primary">Изменить пароль</button>
           </form>
+        </div>
+      )}
+
+      {tab === 'security' && (
+        <div className="card" style={{ maxWidth: 500 }}>
+          <h3><Shield size={20} /> Двухфакторная аутентификация</h3>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: 16 }}>
+            При включении 2FA для входа потребуется ввести код, отправленный на ваш email.
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderTop: '1px solid var(--border-color)' }}>
+            <div>
+              <div style={{ fontWeight: 600 }}>2FA по email</div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                {user?.twoFactorEnabled ? 'Включена' : 'Выключена'}
+              </div>
+            </div>
+            <button
+              className={`btn ${user?.twoFactorEnabled ? 'btn-secondary' : 'btn-primary'} btn-sm`}
+              onClick={async () => {
+                try {
+                  await userAPI.toggle2FA();
+                  await refreshUser();
+                  flash(setMsg, user?.twoFactorEnabled ? '2FA выключена' : '2FA включена');
+                } catch (err) {
+                  flash(setError, err.response?.data?.message || 'Ошибка');
+                }
+              }}
+            >
+              {user?.twoFactorEnabled ? 'Выключить' : 'Включить'}
+            </button>
+          </div>
         </div>
       )}
 

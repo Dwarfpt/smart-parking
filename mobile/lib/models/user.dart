@@ -8,6 +8,7 @@ class User {
   final double balance;
   final String avatar;
   final bool isActive;
+  final bool twoFactorEnabled;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -20,6 +21,7 @@ class User {
     this.balance = 0,
     this.avatar = '',
     this.isActive = true,
+    this.twoFactorEnabled = false,
     this.createdAt,
     this.updatedAt,
   });
@@ -33,6 +35,7 @@ class User {
         balance: (json['balance'] ?? 0).toDouble(),
         avatar: json['avatar'] ?? '',
         isActive: json['isActive'] ?? true,
+        twoFactorEnabled: json['twoFactorEnabled'] ?? false,
         createdAt: json['createdAt'] != null
             ? DateTime.parse(json['createdAt'])
             : null,

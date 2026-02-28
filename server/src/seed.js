@@ -21,9 +21,9 @@ const seed = async () => {
     ]);
 
     // ——— Пользователи ———
-    await User.create({ email: 'admin@smartparking.md', password: 'admin123', name: 'Administrator', phone: '+373 60 000 000', role: 'admin', balance: 0 });
-    await User.create({ email: 'user@smartparking.md',  password: 'user123',  name: 'Иван Петров',   phone: '+373 69 123 456', role: 'user',  balance: 500 });
-    await User.create({ email: 'maria@example.com',     password: 'maria123', name: 'Мария Иванова',  phone: '+373 78 987 654', role: 'user',  balance: 250 });
+    await User.create({ email: 'admin@smartparking.md', password: 'admin123', name: 'Administrator', phone: '+373 60 000 000', role: 'admin', balance: 0, isEmailVerified: true });
+    await User.create({ email: 'user@smartparking.md',  password: 'user123',  name: 'Иван Петров',   phone: '+373 69 123 456', role: 'user',  balance: 500, isEmailVerified: true });
+    await User.create({ email: 'maria@example.com',     password: 'maria123', name: 'Мария Иванова',  phone: '+373 78 987 654', role: 'user',  balance: 250, isEmailVerified: true });
     console.log('Пользователи: 3');
 
     // ——— Парковки (Кишинёв) ———

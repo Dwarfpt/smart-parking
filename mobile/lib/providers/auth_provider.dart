@@ -222,11 +222,26 @@ class AuthProvider extends ChangeNotifier {
         balance: balance,
         avatar: _user!.avatar,
         isActive: _user!.isActive,
+        twoFactorEnabled: _user!.twoFactorEnabled,
       );
       notifyListeners();
       return true;
     } on DioException catch (e) {
       _error = e.response?.data?['message'] ?? 'Ошибка пополнения';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> toggle2FA() async {
+    _error = null;
+    try {
+      final data = await _api.toggle2FA();
+      _user = User.fromJson(data['user']);
+      notifyListeners();
+      return true;
+    } on DioException catch (e) {
+      _error = e.response?.data?['message'] ?? 'Ошибка переключения 2FA';
       notifyListeners();
       return false;
     }

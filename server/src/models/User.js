@@ -14,7 +14,8 @@ const userSchema = new mongoose.Schema(
     isActive: { type: Boolean, default: true },
 
     // 2FA — верификация email через OTP
-    isEmailVerified: { type: Boolean, default: false },
+    isEmailVerified:  { type: Boolean, default: false },
+    twoFactorEnabled: { type: Boolean, default: false },
     otpCode:   { type: String, select: false },
     otpExpiry: { type: Date, select: false },
 

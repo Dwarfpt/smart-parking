@@ -97,6 +97,7 @@ export const userAPI = {
   topUp: (amount) => api.post('/users/topup', { amount }),
   getBalance: () => api.get('/users/balance'),
   getTransactions: (page = 1) => api.get(`/users/transactions?page=${page}`),
+  toggle2FA: () => api.put('/users/toggle-2fa'),
 };
 
 // — Парковки —

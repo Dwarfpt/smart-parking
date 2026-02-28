@@ -140,6 +140,11 @@ class ApiService {
     return (res.data['balance'] as num).toDouble();
   }
 
+  Future<Map<String, dynamic>> toggle2FA() async {
+    final res = await _dio.put('/users/toggle-2fa');
+    return res.data;
+  }
+
   Future<List<Transaction>> getTransactions(
       {int page = 1, int limit = 20}) async {
     final res = await _dio.get('/users/transactions',

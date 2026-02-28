@@ -21,7 +21,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   @override
   void initState() {
     super.initState();
-    _tabCtrl = TabController(length: 4, vsync: this);
+    _tabCtrl = TabController(length: 5, vsync: this);
   }
 
   @override
@@ -41,6 +41,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           tabs: const [
             Tab(text: 'Профиль'),
             Tab(text: 'Пароль'),
+            Tab(text: 'Безопасность'),
             Tab(text: 'Баланс'),
             Tab(text: 'Транзакции'),
           ],
@@ -51,6 +52,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             children: const [
               _ProfileTab(),
               _PasswordTab(),
+              _SecurityTab(),
               _BalanceTab(),
               _TransactionsTab(),
             ],
@@ -232,6 +234,56 @@ class _BalanceTab extends StatefulWidget {
 
   @override
   State<_BalanceTab> createState() => _BalanceTabState();
+}
+
+class _SecurityTab extends StatelessWidget {
+  const _SecurityTab();
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    final user = auth.user;
+    if (user == null) return const Center(child: CircularProgressIndicator());
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Двухфакторная аутентификация',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'При включении 2FA для входа потребуется ввести код, отправленный на ваш email.',
+            style: TextStyle(color: AppTheme.gray500),
+          ),
+          const SizedBox(height: 24),
+          Card(
+            margin: EdgeInsets.zero,
+            child: SwitchListTile(
+              title: const Text('2FA по email'),
+              subtitle: Text(user.twoFactorEnabled ? 'Включена' : 'Выключена'),
+              value: user.twoFactorEnabled,
+              activeColor: AppTheme.primary,
+              onChanged: (_) async {
+                final ok = await auth.toggle2FA();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(ok
+                        ? (user.twoFactorEnabled ? '2FA выключена' : '2FA включена')
+                        : auth.error ?? 'Ошибка'),
+                    backgroundColor: ok ? AppTheme.success : AppTheme.danger,
+                  ));
+                }
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _BalanceTabState extends State<_BalanceTab> {

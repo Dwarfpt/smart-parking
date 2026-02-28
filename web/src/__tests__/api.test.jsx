@@ -53,6 +53,10 @@ describe('API Service', () => {
     it('has changePassword method', () => {
       expect(typeof userAPI.changePassword).toBe('function');
     });
+
+    it('has toggle2FA method', () => {
+      expect(typeof userAPI.toggle2FA).toBe('function');
+    });
   });
 
   describe('parkingAPI', () => {

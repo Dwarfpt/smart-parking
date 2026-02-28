@@ -139,24 +139,16 @@ async function testAuth() {
     assert(res.status === 400, `Expected 400, got ${res.status}`);
   });
 
-  await test('POST /api/auth/login — correct credentials (OTP flow)', async () => {
+  await test('POST /api/auth/login — correct credentials (direct login, 2FA off)', async () => {
     const res = await request('POST', '/api/auth/login', {
       email: testUser.email,
       password: testUser.password,
     });
     assert(res.status === 200, `Expected 200, got ${res.status}: ${JSON.stringify(res.data)}`);
-    assert(res.data.requireOtp === true, 'Expected requireOtp flag');
-    assert(res.data.tempToken, 'Expected tempToken');
-    assert(res.data.otp, 'Expected otp in dev/test mode');
-
-    // Verify OTP to get real token
-    const verifyRes = await request('POST', '/api/auth/verify-otp', {
-      tempToken: res.data.tempToken,
-      otp: res.data.otp,
-    });
-    assert(verifyRes.status === 200, `OTP verify expected 200, got ${verifyRes.status}`);
-    assert(verifyRes.data.token, 'Expected token after OTP verification');
-    userToken = verifyRes.data.token;
+    assert(!res.data.requireOtp, 'Expected no requireOtp when 2FA is off');
+    assert(res.data.token, 'Expected token directly');
+    assert(res.data.user, 'Expected user object');
+    userToken = res.data.token;
   });
 
   await test('POST /api/auth/login — wrong password', async () => {
@@ -168,10 +160,13 @@ async function testAuth() {
   });
 
   await test('POST /api/auth/verify-otp — wrong OTP fails', async () => {
+    // Включаем 2FA для тестирования OTP при логине
+    await request('PUT', '/api/users/toggle-2fa', null, userToken);
     const loginRes = await request('POST', '/api/auth/login', {
       email: testUser.email,
       password: testUser.password,
     });
+    assert(loginRes.data.requireOtp === true, 'Expected requireOtp after enabling 2FA');
     const verifyRes = await request('POST', '/api/auth/verify-otp', {
       tempToken: loginRes.data.tempToken,
       otp: '000000',
@@ -184,25 +179,55 @@ async function testAuth() {
       email: testUser.email,
       password: testUser.password,
     });
+    assert(loginRes.data.requireOtp === true, 'Expected requireOtp with 2FA on');
     const resendRes = await request('POST', '/api/auth/resend-otp', {
       tempToken: loginRes.data.tempToken,
     });
     assert(resendRes.status === 200, `Expected 200, got ${resendRes.status}`);
   });
 
-  await test('POST /api/auth/login — admin login (OTP flow)', async () => {
+  await test('POST /api/auth/login — with 2FA enabled (OTP flow)', async () => {
+    const res = await request('POST', '/api/auth/login', {
+      email: testUser.email,
+      password: testUser.password,
+    });
+    assert(res.status === 200, `Expected 200, got ${res.status}`);
+    assert(res.data.requireOtp === true, 'Expected requireOtp with 2FA on');
+    assert(res.data.tempToken, 'Expected tempToken');
+    assert(res.data.otp, 'Expected otp in dev/test mode');
+
+    const verifyRes = await request('POST', '/api/auth/verify-otp', {
+      tempToken: res.data.tempToken,
+      otp: res.data.otp,
+    });
+    assert(verifyRes.status === 200, `OTP verify expected 200, got ${verifyRes.status}`);
+    assert(verifyRes.data.token, 'Expected token after OTP verification');
+    userToken = verifyRes.data.token;
+
+    // Выключаем 2FA обратно
+    await request('PUT', '/api/users/toggle-2fa', null, userToken);
+  });
+
+  await test('POST /api/auth/login — admin login', async () => {
     const res = await request('POST', '/api/auth/login', {
       email: 'admin@smartparking.md',
       password: 'admin123',
     });
-    if (res.status === 200 && res.data.requireOtp && res.data.otp) {
-      const verifyRes = await request('POST', '/api/auth/verify-otp', {
-        tempToken: res.data.tempToken,
-        otp: res.data.otp,
-      });
-      if (verifyRes.status === 200 && verifyRes.data.token) {
-        adminToken = verifyRes.data.token;
-        adminId = verifyRes.data.user?._id || verifyRes.data.user?.id;
+    if (res.status === 200) {
+      if (res.data.requireOtp && res.data.otp) {
+        // 2FA включена у админа
+        const verifyRes = await request('POST', '/api/auth/verify-otp', {
+          tempToken: res.data.tempToken,
+          otp: res.data.otp,
+        });
+        if (verifyRes.status === 200 && verifyRes.data.token) {
+          adminToken = verifyRes.data.token;
+          adminId = verifyRes.data.user?._id || verifyRes.data.user?.id;
+        }
+      } else if (res.data.token) {
+        // 2FA выключена — токен напрямую
+        adminToken = res.data.token;
+        adminId = res.data.user?._id || res.data.user?.id;
       }
     } else {
       // Admin may not exist if seed hasn't been run
@@ -268,6 +293,18 @@ async function testUsers() {
     const res = await request('GET', '/api/users/transactions', null, userToken);
     assert(res.status === 200, `Expected 200, got ${res.status}`);
     assert(Array.isArray(res.data.transactions), 'Expected transactions array');
+  });
+
+  await test('PUT /api/users/toggle-2fa — enable 2FA', async () => {
+    const res = await request('PUT', '/api/users/toggle-2fa', null, userToken);
+    assert(res.status === 200, `Expected 200, got ${res.status}`);
+    assert(res.data.twoFactorEnabled === true, 'Expected 2FA enabled');
+  });
+
+  await test('PUT /api/users/toggle-2fa — disable 2FA', async () => {
+    const res = await request('PUT', '/api/users/toggle-2fa', null, userToken);
+    assert(res.status === 200, `Expected 200, got ${res.status}`);
+    assert(res.data.twoFactorEnabled === false, 'Expected 2FA disabled');
   });
 }
 
