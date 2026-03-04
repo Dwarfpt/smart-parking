@@ -4,9 +4,9 @@ import { Link } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { parkingAPI } from '../services/api';
 import { MapPin } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 import L from 'leaflet';
 
-// Fix default marker icon for Leaflet + Vite
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -15,6 +15,7 @@ L.Icon.Default.mergeOptions({
 });
 
 export default function ParkingsPage() {
+  const { t } = useLanguage();
   const [lots, setLots] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,7 +31,7 @@ export default function ParkingsPage() {
   return (
     <div className="page">
       <h2 style={{ marginBottom: 20 }}>
-        <MapPin size={24} style={{ verticalAlign: 'middle' }} /> Парковки Кишинёва
+        <MapPin size={24} style={{ verticalAlign: 'middle' }} /> {t('parkingsMapTitle')}
       </h2>
 
       <div className="map-container" style={{ marginBottom: 24 }}>
@@ -56,10 +57,10 @@ export default function ParkingsPage() {
                 <br />
                 {lot.address}
                 <br />
-                Свободно: <strong>{lot.freeSpots}</strong> / {lot.totalSpots}
+                {t('freeSpotsLabel')}: <strong>{lot.freeSpots}</strong> / {lot.totalSpots}
                 <br />
-                {lot.tariff && <>Цена: {lot.tariff.pricePerHour} MDL/ч<br /></>}
-                <Link to={`/parking/${lot._id}`}>Подробнее →</Link>
+                {lot.tariff && <>{t('priceLabel')}: {lot.tariff.pricePerHour} MDL/{t('perHour').replace('/', '')}<br /></>}
+                <Link to={`/parking/${lot._id}`}>{t('moreDetails')} →</Link>
               </Popup>
             </Marker>
           ))}
@@ -74,25 +75,25 @@ export default function ParkingsPage() {
               {lot.address}
             </p>
             <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-              <span className="badge badge-green">{lot.freeSpots} свободно</span>
-              <span className="badge badge-red">{lot.occupiedSpots || 0} занято</span>
-              <span className="badge badge-yellow">{lot.reservedSpots || 0} забронировано</span>
+              <span className="badge badge-green">{lot.freeSpots} {t('freeLabel')}</span>
+              <span className="badge badge-red">{lot.occupiedSpots || 0} {t('occupiedLabel')}</span>
+              <span className="badge badge-yellow">{lot.reservedSpots || 0} {t('reservedLabel')}</span>
             </div>
             {lot.tariff && (
               <p style={{ fontSize: '0.9rem', marginBottom: 8 }}>
-                💰 {lot.tariff.pricePerHour} MDL/ч • Абонемент от {lot.tariff.subscriptionWeek} MDL/нед
+                💰 {lot.tariff.pricePerHour} MDL{t('perHour')} • {t('subscription')} {t('from')} {lot.tariff.subscriptionWeek} MDL{t('perWeek')}
               </p>
             )}
             <p style={{ fontSize: '0.85rem', color: 'var(--gray-500)', marginBottom: 12 }}>
               🕐 {lot.workingHours?.open} – {lot.workingHours?.close}
             </p>
             <Link to={`/parking/${lot._id}`} className="btn btn-primary btn-sm">
-              Выбрать место
+              {t('chooseSpot')}
             </Link>
           </div>
         ))}
         {lots.length === 0 && (
-          <p style={{ color: 'var(--gray-500)' }}>Парковок пока нет.</p>
+          <p style={{ color: 'var(--gray-500)' }}>{t('noParkings')}</p>
         )}
       </div>
     </div>

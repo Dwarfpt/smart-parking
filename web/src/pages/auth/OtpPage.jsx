@@ -1,11 +1,13 @@
 // Страница ввода OTP — 6-значный код из email
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck } from 'lucide-react';
 
 export default function OtpPage() {
   const { pendingOtp, verifyOtp, resendOtp } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
@@ -67,7 +69,7 @@ export default function OtpPage() {
     if (loading) return;
     const otpCode = code || otp.join('');
     if (otpCode.length !== 6) {
-      setError('Введите 6-значный код');
+      setError(t('otpEnter6'));
       return;
     }
     setLoading(true);
@@ -76,7 +78,7 @@ export default function OtpPage() {
       await verifyOtp(otpCode);
       navigate('/parkings');
     } catch (err) {
-      setError(err.response?.data?.message || 'Неверный код');
+      setError(err.response?.data?.message || t('otpWrongCode'));
       setOtp(['', '', '', '', '', '']);
       inputs.current[0]?.focus();
     }
@@ -86,11 +88,11 @@ export default function OtpPage() {
   const handleResend = async () => {
     try {
       await resendOtp();
-      setMsg('Новый код отправлен');
+      setMsg(t('otpNewSent'));
       setResendTimer(60);
       setTimeout(() => setMsg(''), 3000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Ошибка повторной отправки');
+      setError(err.response?.data?.message || t('otpResendError'));
     }
   };
 
@@ -100,9 +102,9 @@ export default function OtpPage() {
     <div className="auth-page">
       <div className="auth-card" style={{ textAlign: 'center' }}>
         <ShieldCheck size={48} color="var(--primary)" style={{ marginBottom: 16 }} />
-        <h2 className="auth-title">Подтверждение</h2>
+        <h2 className="auth-title">{t('otpTitle')}</h2>
         <p className="auth-subtitle">
-          Мы отправили 6-значный код на<br />
+          {t('otpSubtitle')}<br />
           <strong>{pendingOtp.email}</strong>
         </p>
 
@@ -147,12 +149,12 @@ export default function OtpPage() {
           disabled={loading || otp.join('').length !== 6}
           style={{ width: '100%', marginBottom: 16 }}
         >
-          {loading ? 'Проверяем...' : 'Подтвердить'}
+          {loading ? t('otpVerifying') : t('otpSubmit')}
         </button>
 
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
           {resendTimer > 0 ? (
-            <>Отправить повторно через {resendTimer} сек.</>
+            <>{t('otpResendIn')} {resendTimer} {t('otpSec')}</>
           ) : (
             <button
               onClick={handleResend}
@@ -165,7 +167,7 @@ export default function OtpPage() {
                 fontSize: '0.9rem',
               }}
             >
-              Отправить код повторно
+              {t('otpResendNew')}
             </button>
           )}
         </p>

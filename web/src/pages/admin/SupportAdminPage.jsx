@@ -1,9 +1,11 @@
 // Поддержка (админ) — все тикеты, ответы пользователям
 import { useState, useEffect, useRef } from 'react';
 import { adminAPI, supportAPI } from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
 import { MessageSquare, Send, CheckCircle } from 'lucide-react';
 
 export default function SupportAdminPage() {
+  const { t, lang } = useLanguage();
   const [tickets, setTickets] = useState([]);
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -31,7 +33,7 @@ export default function SupportAdminPage() {
       const res = await supportAPI.addMessage(selected._id, replyText);
       setSelected(res.data.ticket);
       setReplyText('');
-      setTickets((prev) => prev.map((t) => (t._id === selected._id ? res.data.ticket : t)));
+      setTickets((prev) => prev.map((tk) => (tk._id === selected._id ? res.data.ticket : tk)));
     } catch { /* ignore */ }
     setSending(false);
     setTimeout(() => chatEnd.current?.scrollIntoView({ behavior: 'smooth' }), 100);
@@ -45,16 +47,16 @@ export default function SupportAdminPage() {
     } catch { /* ignore */ }
   };
 
-  const statusLabels = { open: 'Открыт', 'in-progress': 'В работе', closed: 'Закрыт' };
+  const statusLabels = { open: t('supportOpen'), 'in-progress': t('inProgress'), closed: t('supportClosed') };
   const statusColors = { open: 'badge-green', 'in-progress': 'badge-yellow', closed: 'badge-red' };
 
-  const filtered = filter === 'all' ? tickets : tickets.filter((t) => t.status === filter);
+  const filtered = filter === 'all' ? tickets : tickets.filter((tk) => tk.status === filter);
 
   if (loading) return <div className="loading"><div className="spinner" /></div>;
 
   return (
     <div className="page">
-      <h2><MessageSquare size={22} style={{ verticalAlign: 'middle' }} /> Обращения пользователей</h2>
+      <h2><MessageSquare size={22} style={{ verticalAlign: 'middle' }} /> {t('supportAdminTitle')}</h2>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         {['all', 'open', 'in-progress', 'closed'].map((f) => (
@@ -63,9 +65,9 @@ export default function SupportAdminPage() {
             className={`btn ${filter === f ? 'btn-primary' : 'btn-secondary'} btn-sm`}
             onClick={() => setFilter(f)}
           >
-            {f === 'all' ? 'Все' : statusLabels[f]}
+            {f === 'all' ? t('all') : statusLabels[f]}
             {f !== 'all' && (
-              <span style={{ marginLeft: 4 }}>({tickets.filter((t) => t.status === f).length})</span>
+              <span style={{ marginLeft: 4 }}>({tickets.filter((tk) => tk.status === f).length})</span>
             )}
           </button>
         ))}
@@ -76,33 +78,33 @@ export default function SupportAdminPage() {
         <div className="card" style={{ maxHeight: 600, overflowY: 'auto' }}>
           {filtered.length === 0 ? (
             <p style={{ color: 'var(--gray-500)', textAlign: 'center', padding: 20 }}>
-              Нет обращений.
+              {t('supportEmpty')}
             </p>
           ) : (
-            filtered.map((t) => (
+            filtered.map((tk) => (
               <div
-                key={t._id}
-                onClick={() => setSelected(t)}
+                key={tk._id}
+                onClick={() => setSelected(tk)}
                 style={{
                   padding: '10px 12px',
                   borderBottom: '1px solid var(--gray-200)',
                   cursor: 'pointer',
-                  background: selected?._id === t._id ? 'var(--primary-light)' : 'transparent',
+                  background: selected?._id === tk._id ? 'var(--primary-light)' : 'transparent',
                   borderRadius: 6,
                   marginBottom: 4,
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <strong style={{ fontSize: '0.9rem' }}>{t.subject}</strong>
-                  <span className={`badge ${statusColors[t.status]}`} style={{ fontSize: '0.7rem' }}>
-                    {statusLabels[t.status]}
+                  <strong style={{ fontSize: '0.9rem' }}>{tk.subject}</strong>
+                  <span className={`badge ${statusColors[tk.status]}`} style={{ fontSize: '0.7rem' }}>
+                    {statusLabels[tk.status]}
                   </span>
                 </div>
                 <div style={{ fontSize: '0.78rem', color: 'var(--gray-500)', marginTop: 4 }}>
-                  👤 {t.user?.name || t.user?.email || 'Пользователь'} · {new Date(t.updatedAt || t.createdAt).toLocaleString('ru')}
+                  👤 {tk.user?.name || tk.user?.email || t('supportUser')} · {new Date(tk.updatedAt || tk.createdAt).toLocaleString(lang)}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--gray-400)' }}>
-                  {t.messages?.length || 0} сообщений
+                  {tk.messages?.length || 0} {t('supportMsgCount')}
                 </div>
               </div>
             ))
@@ -117,14 +119,14 @@ export default function SupportAdminPage() {
                 <div>
                   <h3 style={{ margin: 0 }}>{selected.subject}</h3>
                   <span style={{ fontSize: '0.8rem', color: 'var(--gray-500)' }}>
-                    👤 {selected.user?.name || selected.user?.email || 'Пользователь'}
+                    👤 {selected.user?.name || selected.user?.email || t('supportUser')}
                   </span>
                 </div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <span className={`badge ${statusColors[selected.status]}`}>{statusLabels[selected.status]}</span>
                   {selected.status !== 'closed' && (
                     <button className="btn btn-danger btn-sm" onClick={() => handleClose(selected._id)}>
-                      <CheckCircle size={14} /> Закрыть
+                      <CheckCircle size={14} /> {t('supportClose')}
                     </button>
                   )}
                 </div>
@@ -145,7 +147,7 @@ export default function SupportAdminPage() {
                     }}
                   >
                     <div style={{ fontSize: '0.75rem', color: 'var(--gray-500)', marginBottom: 2 }}>
-                      {m.senderRole === 'admin' ? '👨‍💼 Вы (Админ)' : '👤 Пользователь'} · {new Date(m.timestamp).toLocaleString('ru')}
+                      {m.senderRole === 'admin' ? `👨‍💼 ${t('supportAdminYou')}` : `👤 ${t('supportUser')}`} · {new Date(m.timestamp).toLocaleString(lang)}
                     </div>
                     <div style={{ fontSize: '0.9rem' }}>{m.text}</div>
                   </div>
@@ -159,7 +161,7 @@ export default function SupportAdminPage() {
                     style={{ flex: 1 }}
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
-                    placeholder="Ответить пользователю..."
+                    placeholder={t('supportReplyToUser')}
                     required
                   />
                   <button type="submit" className="btn btn-primary" disabled={sending}>
@@ -170,7 +172,7 @@ export default function SupportAdminPage() {
             </>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'var(--gray-500)' }}>
-              Выберите обращение для просмотра
+              {t('supportSelectTicket')}
             </div>
           )}
         </div>

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
+import { LanguageProvider } from '../context/LanguageContext';
 import LoginPage from '../pages/LoginPage';
 import { AuthContext } from '../context/AuthContext';
 
@@ -21,9 +22,11 @@ function renderWithAuth(ui, authValue = {}) {
     ...authValue,
   };
   return render(
-    <AuthContext.Provider value={defaultAuth}>
-      <BrowserRouter>{ui}</BrowserRouter>
-    </AuthContext.Provider>
+    <LanguageProvider>
+      <AuthContext.Provider value={defaultAuth}>
+        <BrowserRouter>{ui}</BrowserRouter>
+      </AuthContext.Provider>
+    </LanguageProvider>
   );
 }
 

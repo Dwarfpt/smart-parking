@@ -4,11 +4,13 @@ import { useParams } from 'react-router-dom';
 import { parkingAPI, bookingAPI, tariffAPI } from '../../services/api';
 import { connectSocket, getSocket, subscribeToParking, unsubscribeFromParking } from '../../services/socket';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { MapPin, Clock, Car, Calendar, CreditCard } from 'lucide-react';
 
 export default function ParkingDetailPage() {
   const { id } = useParams();
   const { user, refreshUser } = useAuth();
+  const { t } = useLanguage();
   const [lot, setLot] = useState(null);
   const [spots, setSpots] = useState([]);
   const [tariffs, setTariffs] = useState([]);
@@ -78,7 +80,7 @@ export default function ParkingDetailPage() {
 
   const handleBook = async (e) => {
     e.preventDefault();
-    if (!selectedSpot) { flash(setError, 'Выберите место'); return; }
+    if (!selectedSpot) { flash(setError, t('selectSpotFirst')); return; }
     setSubmitting(true);
     setError('');
     try {
@@ -88,19 +90,19 @@ export default function ParkingDetailPage() {
           startTime: new Date(startTime).toISOString(),
           endTime: new Date(endTime).toISOString(),
         });
-        flash(setMsg, 'Бронирование создано! Списание произведено.');
+        flash(setMsg, t('bookingCreated'));
       } else {
         await bookingAPI.createSubscription({
           parkingSpotId: selectedSpot,
           period: subPeriod,
         });
-        flash(setMsg, `Абонемент (${subPeriod}) оформлен!`);
+        flash(setMsg, `${t('subscriptionCreated')} (${subPeriod})`);
       }
       await refreshUser();
       await loadData();
       setSelectedSpot(null);
     } catch (err) {
-      flash(setError, err.response?.data?.message || 'Ошибка бронирования');
+      flash(setError, err.response?.data?.message || t('error'));
     }
     setSubmitting(false);
   };
@@ -112,15 +114,15 @@ export default function ParkingDetailPage() {
     maintenance: '#6b7280',
   };
   const statusLabels = {
-    free: 'Свободно',
-    occupied: 'Занято',
-    reserved: 'Забронировано',
-    maintenance: 'Обслуживание',
+    free: t('free'),
+    occupied: t('occupied'),
+    reserved: t('reserved'),
+    maintenance: t('maintenance'),
   };
-  const subLabels = { week: 'Неделя', month: 'Месяц', '3months': '3 месяца', year: 'Год' };
+  const subLabels = { week: t('week'), month: t('month'), '3months': t('threeMonths'), year: t('year') };
 
   if (loading) return <div className="loading"><div className="spinner" /></div>;
-  if (!lot) return <div className="page"><p>Парковка не найдена.</p></div>;
+  if (!lot) return <div className="page"><p>{t('parkingNotFound')}</p></div>;
 
   const lotTariff = tariffs.find((t) => t._id === lot.tariff?._id || t._id === lot.tariff) || lot.tariff || tariffs[0];
 
@@ -134,26 +136,26 @@ export default function ParkingDetailPage() {
 
       <div className="stats-grid" style={{ marginBottom: 20 }}>
         <div className="stat-card">
-          <div className="stat-label">Всего мест</div>
+          <div className="stat-label">{t('totalSpotsLabel')}</div>
           <div className="stat-value">{lot.totalSpots}</div>
         </div>
         <div className="stat-card">
-          <div className="stat-label">Свободно</div>
+          <div className="stat-label">{t('freeSpotsLabel')}</div>
           <div className="stat-value" style={{ color: 'var(--green)' }}>
             {spots.filter(s => s.status === 'free').length}
           </div>
         </div>
         <div className="stat-card">
-          <div className="stat-label">Часы работы</div>
+          <div className="stat-label">{t('workHoursLabel')}</div>
           <div className="stat-value" style={{ fontSize: '1rem' }}>
             <Clock size={16} /> {lot.workingHours?.open} – {lot.workingHours?.close}
           </div>
         </div>
         {lotTariff && (
           <div className="stat-card">
-            <div className="stat-label">Цена</div>
+            <div className="stat-label">{t('priceLabel')}</div>
             <div className="stat-value" style={{ fontSize: '1rem' }}>
-              {lotTariff.pricePerHour} MDL/ч
+              {lotTariff.pricePerHour} MDL{t('perHour')}
             </div>
           </div>
         )}
@@ -169,7 +171,7 @@ export default function ParkingDetailPage() {
         ))}
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <div style={{ width: 18, height: 18, borderRadius: 4, border: '3px solid var(--primary)', background: 'var(--primary-light)' }} />
-          <span style={{ fontSize: '0.85rem' }}>Выбрано</span>
+          <span style={{ fontSize: '0.85rem' }}>{t('selectedLabel')}</span>
         </div>
       </div>
 
@@ -206,20 +208,20 @@ export default function ParkingDetailPage() {
       {/* Booking form */}
       {selectedSpot && (
         <div className="card" style={{ maxWidth: 500 }}>
-          <h3><Calendar size={18} /> Бронирование — место {spots.find(s => s._id === selectedSpot)?.spotNumber}</h3>
+          <h3><Calendar size={18} /> {t('bookingFormTitle')} {spots.find(s => s._id === selectedSpot)?.spotNumber}</h3>
 
           <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
             <button
               className={`btn ${bookingType === 'reservation' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
               onClick={() => setBookingType('reservation')}
             >
-              Разовое
+              {t('oneTime')}
             </button>
             <button
               className={`btn ${bookingType === 'subscription' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
               onClick={() => setBookingType('subscription')}
             >
-              Абонемент
+              {t('subscription')}
             </button>
           </div>
 
@@ -227,7 +229,7 @@ export default function ParkingDetailPage() {
             {bookingType === 'reservation' ? (
               <>
                 <div className="form-group">
-                  <label>Начало</label>
+                  <label>{t('startTime')}</label>
                   <input
                     type="datetime-local"
                     value={startTime}
@@ -236,7 +238,7 @@ export default function ParkingDetailPage() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Конец</label>
+                  <label>{t('endTime')}</label>
                   <input
                     type="datetime-local"
                     value={endTime}
@@ -246,7 +248,7 @@ export default function ParkingDetailPage() {
                 </div>
                 {lotTariff && startTime && endTime && (
                   <p style={{ marginBottom: 12, fontSize: '0.95rem' }}>
-                    <CreditCard size={16} /> Стоимость ≈{' '}
+                    <CreditCard size={16} /> {t('costLabel')} ≈{' '}
                     <strong>
                       {(
                         ((new Date(endTime) - new Date(startTime)) / 3600000) *
@@ -260,7 +262,7 @@ export default function ParkingDetailPage() {
             ) : (
               <>
                 <div className="form-group">
-                  <label>Период абонемента</label>
+                  <label>{t('subPeriodLabel')}</label>
                   <select value={subPeriod} onChange={e => setSubPeriod(e.target.value)}>
                     {Object.entries(subLabels).map(([k, v]) => (
                       <option key={k} value={k}>{v}</option>
@@ -269,7 +271,7 @@ export default function ParkingDetailPage() {
                 </div>
                 {lotTariff && (
                   <p style={{ marginBottom: 12, fontSize: '0.95rem' }}>
-                    <CreditCard size={16} /> Стоимость:{' '}
+                    <CreditCard size={16} /> {t('costLabel')}:{' '}
                     <strong>
                       {lotTariff[`subscription${subPeriod.charAt(0).toUpperCase() + subPeriod.slice(1)}`] || '—'} MDL
                     </strong>
@@ -279,11 +281,11 @@ export default function ParkingDetailPage() {
             )}
 
             <p style={{ fontSize: '0.85rem', color: 'var(--gray-500)', marginBottom: 12 }}>
-              Ваш баланс: <strong>{user?.balance?.toFixed(2)} MDL</strong>
+              {t('yourBalance')}: <strong>{user?.balance?.toFixed(2)} MDL</strong>
             </p>
 
             <button type="submit" className="btn btn-primary" disabled={submitting}>
-              {submitting ? 'Оформление...' : 'Забронировать'}
+              {submitting ? t('processing') : t('bookSpot')}
             </button>
           </form>
         </div>

@@ -1,6 +1,7 @@
 // Управление парковками — создание, редактирование, деактивация
 import { useState, useEffect } from 'react';
 import { adminAPI, tariffAPI } from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
 import { MapPin, Plus, Edit2, Trash2, Check, X } from 'lucide-react';
 
 const emptyForm = {
@@ -9,6 +10,7 @@ const emptyForm = {
 };
 
 export default function ParkingsAdminPage() {
+  const { t } = useLanguage();
   const [lots, setLots] = useState([]);
   const [tariffs, setTariffs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -60,17 +62,17 @@ export default function ParkingsAdminPage() {
     try {
       if (editing) {
         await adminAPI.updateParking(editing, data);
-        flash(setMsg, 'Парковка обновлена');
+        flash(setMsg, t('parkingUpdated'));
       } else {
         await adminAPI.createParking(data);
-        flash(setMsg, 'Парковка создана');
+        flash(setMsg, t('parkingCreated'));
       }
       setShowForm(false);
       setEditing(null);
       setForm({ ...emptyForm });
       load();
     } catch (err) {
-      flash(setError, err.response?.data?.message || 'Ошибка');
+      flash(setError, err.response?.data?.message || t('error'));
     }
   };
 
@@ -90,13 +92,13 @@ export default function ParkingsAdminPage() {
   };
 
   const handleDelete = async (id, name) => {
-    if (!confirm(`Удалить парковку "${name}"? Все связанные места будут удалены.`)) return;
+    if (!confirm(`${t('deleteParkingConfirm')} "${name}"?`)) return;
     try {
       await adminAPI.deleteParking(id);
-      flash(setMsg, 'Парковка удалена');
+      flash(setMsg, t('parkingDeleted'));
       load();
     } catch (err) {
-      flash(setError, err.response?.data?.message || 'Ошибка');
+      flash(setError, err.response?.data?.message || t('error'));
     }
   };
 
@@ -105,12 +107,12 @@ export default function ParkingsAdminPage() {
   return (
     <div className="page">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h2><MapPin size={22} style={{ verticalAlign: 'middle' }} /> Парковки</h2>
+        <h2><MapPin size={22} style={{ verticalAlign: 'middle' }} /> {t('adminParkings')}</h2>
         <button
           className="btn btn-primary btn-sm"
           onClick={() => { setShowForm(!showForm); setEditing(null); setForm({ ...emptyForm }); }}
         >
-          {showForm ? <><X size={16} /> Закрыть</> : <><Plus size={16} /> Новая парковка</>}
+          {showForm ? <><X size={16} /> {t('close')}</> : <><Plus size={16} /> {t('newParking')}</>}
         </button>
       </div>
 
@@ -119,53 +121,53 @@ export default function ParkingsAdminPage() {
 
       {showForm && (
         <div className="card" style={{ maxWidth: 600, marginBottom: 20 }}>
-          <h3>{editing ? 'Редактировать парковку' : 'Новая парковка'}</h3>
+          <h3>{editing ? t('editParking') : t('newParking')}</h3>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label>Название</label>
+              <label>{t('parkingName')}</label>
               <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required placeholder="Парковка Центр" />
             </div>
             <div className="form-group">
-              <label>Адрес</label>
+              <label>{t('parkingAddress')}</label>
               <input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} required placeholder="ул. Штефан чел Маре, 1" />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div className="form-group">
-                <label>Широта</label>
+                <label>{t('parkingLat')}</label>
                 <input type="number" step="0.0001" value={form.latitude} onChange={(e) => setForm({ ...form, latitude: e.target.value })} required />
               </div>
               <div className="form-group">
-                <label>Долгота</label>
+                <label>{t('parkingLng')}</label>
                 <input type="number" step="0.0001" value={form.longitude} onChange={(e) => setForm({ ...form, longitude: e.target.value })} required />
               </div>
               <div className="form-group">
-                <label>Кол-во мест</label>
+                <label>{t('parkingSpotsCount')}</label>
                 <input type="number" min="1" value={form.totalSpots} onChange={(e) => setForm({ ...form, totalSpots: e.target.value })} required />
               </div>
               <div className="form-group">
-                <label>Тариф</label>
+                <label>{t('parkingTariff')}</label>
                 <select value={form.tariff} onChange={(e) => setForm({ ...form, tariff: e.target.value })}>
-                  <option value="">— Выбрать —</option>
-                  {tariffs.map((t) => (
-                    <option key={t._id} value={t._id}>{t.name} ({t.pricePerHour} MDL/ч)</option>
+                  <option value="">{t('selectTariff')}</option>
+                  {tariffs.map((tf) => (
+                    <option key={tf._id} value={tf._id}>{tf.name} ({tf.pricePerHour} MDL/ч)</option>
                   ))}
                 </select>
               </div>
               <div className="form-group">
-                <label>Открытие</label>
+                <label>{t('parkingOpenTime')}</label>
                 <input type="time" value={form.workingHoursOpen} onChange={(e) => setForm({ ...form, workingHoursOpen: e.target.value })} />
               </div>
               <div className="form-group">
-                <label>Закрытие</label>
+                <label>{t('parkingCloseTime')}</label>
                 <input type="time" value={form.workingHoursClose} onChange={(e) => setForm({ ...form, workingHoursClose: e.target.value })} />
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
               <button type="submit" className="btn btn-primary">
-                <Check size={16} /> {editing ? 'Сохранить' : 'Создать'}
+                <Check size={16} /> {editing ? t('save') : t('create')}
               </button>
               <button type="button" className="btn btn-secondary" onClick={() => { setShowForm(false); setEditing(null); }}>
-                Отмена
+                {t('cancel')}
               </button>
             </div>
           </form>
@@ -188,8 +190,8 @@ export default function ParkingsAdminPage() {
             </div>
             <p style={{ color: 'var(--gray-500)', fontSize: '0.9rem', margin: '4px 0' }}>{lot.address}</p>
             <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-              <span className="badge badge-blue">{lot.totalSpots} мест</span>
-              <span className="badge badge-green">{lot.freeSpots || 0} свободно</span>
+              <span className="badge badge-blue">{lot.totalSpots} {t('spotsCount')}</span>
+              <span className="badge badge-green">{lot.freeSpots || 0} {t('freeCount')}</span>
               {lot.tariff && <span className="badge badge-yellow">{lot.tariff.name || lot.tariff.pricePerHour + ' MDL/ч'}</span>}
               <span className="badge badge-purple" style={{ background: '#8b5cf6', color: '#fff' }}>
                 {lot.workingHours?.open} – {lot.workingHours?.close}
@@ -201,7 +203,7 @@ export default function ParkingsAdminPage() {
           </div>
         ))}
         {lots.length === 0 && (
-          <p style={{ color: 'var(--gray-500)' }}>Парковок пока нет.</p>
+          <p style={{ color: 'var(--gray-500)' }}>{t('noParkingsYet')}</p>
         )}
       </div>
     </div>

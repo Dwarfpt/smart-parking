@@ -1,11 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
+import { LanguageProvider } from '../context/LanguageContext';
 import HomePage from '../pages/HomePage';
 
-// Wrap component with Router for Link components
+// Wrap component with Router and LanguageProvider for Link components
 function renderWithRouter(ui) {
-  return render(<BrowserRouter>{ui}</BrowserRouter>);
+  return render(<LanguageProvider><BrowserRouter>{ui}</BrowserRouter></LanguageProvider>);
 }
 
 describe('HomePage', () => {

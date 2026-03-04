@@ -3,9 +3,12 @@ import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Car } from 'lucide-react';
 import ThemeToggle from '../ThemeToggle';
+import LanguageSwitcher from '../LanguageSwitcher';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function PublicLayout() {
   const { isAuthenticated, isAdmin } = useAuth();
+  const { t } = useLanguage();
 
   return (
     <div className="main-content">
@@ -14,21 +17,22 @@ export default function PublicLayout() {
           <Car size={24} /> Smart Parking
         </Link>
         <nav className="header-nav">
-          <NavLink to="/parkings">Парковки</NavLink>
-          <NavLink to="/about">О нас</NavLink>
+          <NavLink to="/parkings">{t('navParkings')}</NavLink>
+          <NavLink to="/about">{t('navAbout')}</NavLink>
           {isAuthenticated ? (
             <>
-              <NavLink to="/my-bookings">Мои бронирования</NavLink>
-              <NavLink to="/support">Поддержка</NavLink>
-              <NavLink to="/profile">Профиль</NavLink>
-              {isAdmin && <NavLink to="/admin">Админ</NavLink>}
+              <NavLink to="/my-bookings">{t('navMyBookings')}</NavLink>
+              <NavLink to="/support">{t('navSupport')}</NavLink>
+              <NavLink to="/profile">{t('navProfile')}</NavLink>
+              {isAdmin && <NavLink to="/admin">{t('navAdmin')}</NavLink>}
             </>
           ) : (
             <>
-              <NavLink to="/login">Вход</NavLink>
-              <NavLink to="/register">Регистрация</NavLink>
+              <NavLink to="/login">{t('navLogin')}</NavLink>
+              <NavLink to="/register">{t('navRegister')}</NavLink>
             </>
           )}
+          <LanguageSwitcher />
           <ThemeToggle />
         </nav>
       </header>

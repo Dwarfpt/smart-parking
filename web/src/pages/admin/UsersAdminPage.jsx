@@ -1,9 +1,11 @@
 // Управление пользователями — поиск, редактирование, деактивация
 import { useState, useEffect } from 'react';
 import { adminAPI } from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
 import { Users, Search, Edit2, Trash2, DollarSign, X, Check } from 'lucide-react';
 
 export default function UsersAdminPage() {
+  const { t, lang } = useLanguage();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -35,21 +37,21 @@ export default function UsersAdminPage() {
     try {
       await adminAPI.updateUser(editing, editForm);
       setEditing(null);
-      flash(setMsg, 'Пользователь обновлён');
+      flash(setMsg, t('userUpdated'));
       load();
     } catch (err) {
-      flash(setError, err.response?.data?.message || 'Ошибка');
+      flash(setError, err.response?.data?.message || t('error'));
     }
   };
 
   const handleDelete = async (id, name) => {
-    if (!confirm(`Удалить пользователя ${name}?`)) return;
+    if (!confirm(`${t('deleteUserConfirm')} ${name}?`)) return;
     try {
       await adminAPI.deleteUser(id);
-      flash(setMsg, 'Пользователь удалён');
+      flash(setMsg, t('userDeleted'));
       load();
     } catch (err) {
-      flash(setError, err.response?.data?.message || 'Ошибка');
+      flash(setError, err.response?.data?.message || t('error'));
     }
   };
 
@@ -59,10 +61,10 @@ export default function UsersAdminPage() {
       await adminAPI.creditUser(creditModal._id, Number(creditAmount));
       setCreditModal(null);
       setCreditAmount('');
-      flash(setMsg, `Баланс пополнен на ${creditAmount} MDL`);
+      flash(setMsg, `${t('balanceCredited')} ${creditAmount} MDL`);
       load();
     } catch (err) {
-      flash(setError, err.response?.data?.message || 'Ошибка');
+      flash(setError, err.response?.data?.message || t('error'));
     }
   };
 
@@ -75,7 +77,7 @@ export default function UsersAdminPage() {
 
   return (
     <div className="page">
-      <h2><Users size={22} style={{ verticalAlign: 'middle' }} /> Пользователи</h2>
+      <h2><Users size={22} style={{ verticalAlign: 'middle' }} /> {t('adminUsers')}</h2>
 
       {msg && <div className="alert alert-success">{msg}</div>}
       {error && <div className="alert alert-error">{error}</div>}
@@ -85,7 +87,7 @@ export default function UsersAdminPage() {
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Поиск по имени или email..."
+          placeholder={t('searchUserPlaceholder')}
           style={{ paddingLeft: 36, width: '100%' }}
         />
       </div>
@@ -94,13 +96,15 @@ export default function UsersAdminPage() {
         <table>
           <thead>
             <tr>
-              <th>Имя</th>
+              <th>{t('authName')}</th>
               <th>Email</th>
-              <th>Телефон</th>
-              <th>Роль</th>
-              <th>Баланс</th>
-              <th>Регистрация</th>
-              <th>Действия</th>
+              <th>{t('authPhone')}</th>
+              <th>{t('role')}</th>
+              <th>{t('emailVerified')}</th>
+              <th>2FA</th>
+              <th>{t('balance')}</th>
+              <th>{t('registration')}</th>
+              <th>{t('actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -117,8 +121,10 @@ export default function UsersAdminPage() {
                         <option value="admin">Admin</option>
                       </select>
                     </td>
+                    <td><span className={`badge ${u.isEmailVerified ? 'badge-green' : 'badge-red'}`}>{u.isEmailVerified ? t('yes') : t('no')}</span></td>
+                    <td><span className={`badge ${u.twoFactorEnabled ? 'badge-green' : 'badge-gray'}`}>{u.twoFactorEnabled ? t('onBadge') : t('offBadge')}</span></td>
                     <td>{u.balance?.toFixed(2)} MDL</td>
-                    <td>{new Date(u.createdAt).toLocaleDateString('ru')}</td>
+                    <td>{new Date(u.createdAt).toLocaleDateString(lang)}</td>
                     <td>
                       <button className="btn btn-primary btn-sm" onClick={handleSave} style={{ marginRight: 4 }}>
                         <Check size={14} />
@@ -135,20 +141,22 @@ export default function UsersAdminPage() {
                     <td>{u.phone || '—'}</td>
                     <td>
                       <span className={`badge ${u.role === 'admin' ? 'badge-red' : 'badge-green'}`}>
-                        {u.role === 'admin' ? 'Админ' : 'Пользователь'}
+                        {u.role === 'admin' ? t('adminRoleBadge') : t('userRoleBadge')}
                       </span>
                     </td>
+                    <td><span className={`badge ${u.isEmailVerified ? 'badge-green' : 'badge-red'}`}>{u.isEmailVerified ? t('yes') : t('no')}</span></td>
+                    <td><span className={`badge ${u.twoFactorEnabled ? 'badge-green' : 'badge-gray'}`}>{u.twoFactorEnabled ? t('onBadge') : t('offBadge')}</span></td>
                     <td>{u.balance?.toFixed(2)} MDL</td>
-                    <td>{new Date(u.createdAt).toLocaleDateString('ru')}</td>
+                    <td>{new Date(u.createdAt).toLocaleDateString(lang)}</td>
                     <td>
                       <div style={{ display: 'flex', gap: 4 }}>
-                        <button className="btn btn-secondary btn-sm" onClick={() => handleEdit(u)} title="Редактировать">
+                        <button className="btn btn-secondary btn-sm" onClick={() => handleEdit(u)} title={t('edit')}>
                           <Edit2 size={14} />
                         </button>
-                        <button className="btn btn-primary btn-sm" onClick={() => setCreditModal(u)} title="Пополнить">
+                        <button className="btn btn-primary btn-sm" onClick={() => setCreditModal(u)} title={t('topupBtn')}>
                           <DollarSign size={14} />
                         </button>
-                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(u._id, u.name)} title="Удалить">
+                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(u._id, u.name)} title={t('delete')}>
                           <Trash2 size={14} />
                         </button>
                       </div>
@@ -165,12 +173,12 @@ export default function UsersAdminPage() {
       {creditModal && (
         <div className="modal-overlay" onClick={() => setCreditModal(null)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Пополнить баланс — {creditModal.name}</h3>
+            <h3>{t('creditBalance')} — {creditModal.name}</h3>
             <p style={{ margin: '8px 0', color: 'var(--gray-500)' }}>
-              Текущий баланс: {creditModal.balance?.toFixed(2)} MDL
+              {t('currentBalance')}: {creditModal.balance?.toFixed(2)} MDL
             </p>
             <div className="form-group">
-              <label>Сумма (MDL)</label>
+              <label>{t('topupAmount')}</label>
               <input
                 type="number"
                 min="1"
@@ -180,15 +188,15 @@ export default function UsersAdminPage() {
               />
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button className="btn btn-primary" onClick={handleCredit}>Пополнить</button>
-              <button className="btn btn-secondary" onClick={() => setCreditModal(null)}>Отмена</button>
+              <button className="btn btn-primary" onClick={handleCredit}>{t('topupBtn')}</button>
+              <button className="btn btn-secondary" onClick={() => setCreditModal(null)}>{t('cancel')}</button>
             </div>
           </div>
         </div>
       )}
 
       <p style={{ marginTop: 12, color: 'var(--gray-500)', fontSize: '0.85rem' }}>
-        Всего: {filtered.length} из {users.length}
+        {filtered.length} {t('totalOf')} {users.length}
       </p>
     </div>
   );

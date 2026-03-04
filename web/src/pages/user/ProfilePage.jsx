@@ -1,12 +1,14 @@
 // Профиль пользователя — данные, баланс, транзакции
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { userAPI, bookingAPI } from '../../services/api';
 import { User, Wallet, History, Eye, EyeOff, QrCode, Shield } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
 export default function ProfilePage() {
   const { user, refreshUser } = useAuth();
+  const { t, lang } = useLanguage();
   const [form, setForm] = useState({ name: '', email: '', phone: '' });
   const [passForm, setPassForm] = useState({ currentPassword: '', newPassword: '' });
   const [topupAmount, setTopupAmount] = useState('');
@@ -50,9 +52,9 @@ export default function ProfilePage() {
     try {
       await userAPI.updateProfile(form);
       await refreshUser();
-      flash(setMsg, 'Профиль обновлён');
+      flash(setMsg, t('profileUpdated'));
     } catch (err) {
-      flash(setError, err.response?.data?.message || 'Ошибка');
+      flash(setError, err.response?.data?.message || t('error'));
     }
   };
 
@@ -62,9 +64,9 @@ export default function ProfilePage() {
     try {
       await userAPI.changePassword(passForm);
       setPassForm({ currentPassword: '', newPassword: '' });
-      flash(setMsg, 'Пароль изменён');
+      flash(setMsg, t('passwordChanged'));
     } catch (err) {
-      flash(setError, err.response?.data?.message || 'Ошибка');
+      flash(setError, err.response?.data?.message || t('error'));
     }
   };
 
@@ -75,26 +77,26 @@ export default function ProfilePage() {
       await userAPI.topUp(Number(topupAmount));
       await refreshUser();
       setTopupAmount('');
-      flash(setMsg, `Баланс пополнен на ${topupAmount} MDL`);
+      flash(setMsg, `${t('topupSuccess')} ${topupAmount} MDL`);
       loadTransactions();
     } catch (err) {
-      flash(setError, err.response?.data?.message || 'Ошибка');
+      flash(setError, err.response?.data?.message || t('error'));
     }
   };
 
-  const typeLabels = { topup: 'Пополнение', payment: 'Оплата', refund: 'Возврат' };
+  const typeLabels = { topup: t('txTopup'), payment: t('txPayment'), refund: t('txRefund') };
   const typeColors = { topup: 'badge-green', payment: 'badge-red', refund: 'badge-yellow' };
 
   return (
     <div className="page">
-      <h2><User size={22} style={{ verticalAlign: 'middle' }} /> Профиль</h2>
+      <h2><User size={22} style={{ verticalAlign: 'middle' }} /> {t('profileTitle')}</h2>
 
       {msg && <div className="alert alert-success">{msg}</div>}
       {error && <div className="alert alert-error">{error}</div>}
 
       <div className="stats-grid" style={{ marginBottom: 24 }}>
         <div className="stat-card">
-          <div className="stat-label">Баланс</div>
+          <div className="stat-label">{t('balance')}</div>
           <div className="stat-value">{user?.balance?.toFixed(2) || '0.00'} MDL</div>
         </div>
         <div className="stat-card">
@@ -102,29 +104,29 @@ export default function ProfilePage() {
           <div className="stat-value" style={{ fontSize: '1rem' }}>{user?.email}</div>
         </div>
         <div className="stat-card">
-          <div className="stat-label">Роль</div>
-          <div className="stat-value" style={{ fontSize: '1rem' }}>{user?.role === 'admin' ? 'Администратор' : 'Пользователь'}</div>
+          <div className="stat-label">{t('role')}</div>
+          <div className="stat-value" style={{ fontSize: '1rem' }}>{user?.role === 'admin' ? t('roleAdmin') : t('roleUser')}</div>
         </div>
       </div>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
-        {['profile', 'password', 'security', 'topup', 'history', 'qrcodes'].map(t => (
+        {['profile', 'password', 'security', 'topup', 'history', 'qrcodes'].map(tabKey => (
           <button
-            key={t}
-            className={`btn ${tab === t ? 'btn-primary' : 'btn-secondary'} btn-sm`}
-            onClick={() => setTab(t)}
+            key={tabKey}
+            className={`btn ${tab === tabKey ? 'btn-primary' : 'btn-secondary'} btn-sm`}
+            onClick={() => setTab(tabKey)}
           >
-            {{ profile: 'Данные', password: 'Пароль', security: 'Безопасность', topup: 'Пополнить', history: 'История', qrcodes: 'QR-коды' }[t]}
+            {{ profile: t('tabData'), password: t('tabPassword'), security: t('tabSecurity'), topup: t('tabTopup'), history: t('tabHistory'), qrcodes: t('tabQR') }[tabKey]}
           </button>
         ))}
       </div>
 
       {tab === 'profile' && (
         <div className="card" style={{ maxWidth: 500 }}>
-          <h3>Личные данные</h3>
+          <h3>{t('personalData')}</h3>
           <form onSubmit={handleProfile}>
             <div className="form-group">
-              <label>Имя</label>
+              <label>{t('authName')}</label>
               <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
             </div>
             <div className="form-group">
@@ -132,20 +134,20 @@ export default function ProfilePage() {
               <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required />
             </div>
             <div className="form-group">
-              <label>Телефон</label>
+              <label>{t('authPhone')}</label>
               <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+373..." />
             </div>
-            <button type="submit" className="btn btn-primary">Сохранить</button>
+            <button type="submit" className="btn btn-primary">{t('save')}</button>
           </form>
         </div>
       )}
 
       {tab === 'password' && (
         <div className="card" style={{ maxWidth: 500 }}>
-          <h3>Смена пароля</h3>
+          <h3>{t('changePassword')}</h3>
           <form onSubmit={handlePassword}>
             <div className="form-group">
-              <label>Текущий пароль</label>
+              <label>{t('currentPassword')}</label>
               <div style={{ position: 'relative' }}>
                 <input
                   type={showPass ? 'text' : 'password'}
@@ -163,7 +165,7 @@ export default function ProfilePage() {
               </div>
             </div>
             <div className="form-group">
-              <label>Новый пароль</label>
+              <label>{t('newPassword')}</label>
               <input
                 type="password"
                 value={passForm.newPassword}
@@ -172,22 +174,22 @@ export default function ProfilePage() {
                 minLength={6}
               />
             </div>
-            <button type="submit" className="btn btn-primary">Изменить пароль</button>
+            <button type="submit" className="btn btn-primary">{t('changePasswordBtn')}</button>
           </form>
         </div>
       )}
 
       {tab === 'security' && (
         <div className="card" style={{ maxWidth: 500 }}>
-          <h3><Shield size={20} /> Двухфакторная аутентификация</h3>
+          <h3><Shield size={20} /> {t('securityTitle')}</h3>
           <p style={{ color: 'var(--text-secondary)', marginBottom: 16 }}>
-            При включении 2FA для входа потребуется ввести код, отправленный на ваш email.
+            {t('securityDesc')}
           </p>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderTop: '1px solid var(--border-color)' }}>
             <div>
-              <div style={{ fontWeight: 600 }}>2FA по email</div>
+              <div style={{ fontWeight: 600 }}>{t('twoFAEmail')}</div>
               <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                {user?.twoFactorEnabled ? 'Включена' : 'Выключена'}
+                {user?.twoFactorEnabled ? t('twoFAOn') : t('twoFAOff')}
               </div>
             </div>
             <button
@@ -196,13 +198,13 @@ export default function ProfilePage() {
                 try {
                   await userAPI.toggle2FA();
                   await refreshUser();
-                  flash(setMsg, user?.twoFactorEnabled ? '2FA выключена' : '2FA включена');
+                  flash(setMsg, user?.twoFactorEnabled ? t('twoFADisabled') : t('twoFAEnabled'));
                 } catch (err) {
-                  flash(setError, err.response?.data?.message || 'Ошибка');
+                  flash(setError, err.response?.data?.message || t('error'));
                 }
               }}
             >
-              {user?.twoFactorEnabled ? 'Выключить' : 'Включить'}
+              {user?.twoFactorEnabled ? t('twoFATurnOff') : t('twoFATurnOn')}
             </button>
           </div>
         </div>
@@ -210,10 +212,10 @@ export default function ProfilePage() {
 
       {tab === 'topup' && (
         <div className="card" style={{ maxWidth: 500 }}>
-          <h3><Wallet size={20} /> Пополнение баланса</h3>
+          <h3><Wallet size={20} /> {t('topupTitle')}</h3>
           <form onSubmit={handleTopup}>
             <div className="form-group">
-              <label>Сумма (MDL)</label>
+              <label>{t('topupAmount')}</label>
               <input
                 type="number"
                 min="1"
@@ -231,36 +233,36 @@ export default function ProfilePage() {
                 </button>
               ))}
             </div>
-            <button type="submit" className="btn btn-primary">Пополнить</button>
+            <button type="submit" className="btn btn-primary">{t('topupBtn')}</button>
           </form>
         </div>
       )}
 
       {tab === 'history' && (
         <div className="card">
-          <h3><History size={20} /> История транзакций</h3>
+          <h3><History size={20} /> {t('historyTitle')}</h3>
           {transactions.length === 0 ? (
-            <p style={{ color: 'var(--gray-500)' }}>Транзакций пока нет.</p>
+            <p style={{ color: 'var(--gray-500)' }}>{t('historyEmpty')}</p>
           ) : (
             <div className="table-container">
               <table>
                 <thead>
                   <tr>
-                    <th>Дата</th>
-                    <th>Тип</th>
-                    <th>Сумма</th>
-                    <th>Описание</th>
+                    <th>{t('date')}</th>
+                    <th>{t('txType')}</th>
+                    <th>{t('txAmount')}</th>
+                    <th>{t('txDescription')}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.map(t => (
-                    <tr key={t._id}>
-                      <td>{new Date(t.createdAt).toLocaleString('ru')}</td>
-                      <td><span className={`badge ${typeColors[t.type]}`}>{typeLabels[t.type]}</span></td>
-                      <td style={{ fontWeight: 600, color: t.type === 'payment' ? 'var(--red)' : 'var(--green)' }}>
-                        {t.type === 'payment' ? '-' : '+'}{t.amount.toFixed(2)} MDL
+                  {transactions.map(tx => (
+                    <tr key={tx._id}>
+                      <td>{new Date(tx.createdAt).toLocaleString(lang)}</td>
+                      <td><span className={`badge ${typeColors[tx.type]}`}>{typeLabels[tx.type]}</span></td>
+                      <td style={{ fontWeight: 600, color: tx.type === 'payment' ? 'var(--red)' : 'var(--green)' }}>
+                        {tx.type === 'payment' ? '-' : '+'}{tx.amount.toFixed(2)} MDL
                       </td>
-                      <td>{t.description || '—'}</td>
+                      <td>{tx.description || '—'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -272,9 +274,9 @@ export default function ProfilePage() {
 
       {tab === 'qrcodes' && (
         <div className="card">
-          <h3><QrCode size={20} /> Мои QR-коды</h3>
+          <h3><QrCode size={20} /> {t('qrTitle')}</h3>
           {activeBookings.length === 0 ? (
-            <p style={{ color: 'var(--text-secondary)' }}>Нет активных бронирований с QR-кодами.</p>
+            <p style={{ color: 'var(--text-secondary)' }}>{t('qrEmpty')}</p>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
               {activeBookings.filter(b => b.qrToken).map(b => (
@@ -286,10 +288,10 @@ export default function ProfilePage() {
                     includeMargin
                   />
                   <p style={{ fontWeight: 600, margin: '8px 0 4px' }}>
-                    {b.parkingLotId?.name || 'Парковка'} — место {b.parkingSpotId?.spotNumber || '?'}
+                    {b.parkingLotId?.name || t('parkingsMapTitle')} — {t('spot')} {b.parkingSpotId?.spotNumber || '?'}
                   </p>
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                    {b.type === 'subscription' ? 'Абонемент' : 'Разовое'} — до {new Date(b.endTime).toLocaleDateString('ru')}
+                    {b.type === 'subscription' ? t('subscription') : t('oneTime')} — {new Date(b.endTime).toLocaleDateString(lang)}
                   </p>
                 </div>
               ))}

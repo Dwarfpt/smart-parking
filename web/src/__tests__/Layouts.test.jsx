@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { ThemeProvider } from '../context/ThemeContext';
+import { LanguageProvider } from '../context/LanguageContext';
 import PublicLayout from '../components/layouts/PublicLayout';
 import UserLayout from '../components/layouts/UserLayout';
 import AdminLayout from '../components/layouts/AdminLayout';
@@ -17,11 +18,13 @@ function renderWithAuth(ui, authValue = {}, route = '/') {
   };
   return render(
     <ThemeProvider>
-      <AuthContext.Provider value={defaultAuth}>
-        <MemoryRouter initialEntries={[route]}>
-          {ui}
-        </MemoryRouter>
-      </AuthContext.Provider>
+      <LanguageProvider>
+        <AuthContext.Provider value={defaultAuth}>
+          <MemoryRouter initialEntries={[route]}>
+            {ui}
+          </MemoryRouter>
+        </AuthContext.Provider>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

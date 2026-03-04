@@ -1,10 +1,12 @@
 // Мои бронирования — список, QR-коды, отмена
 import { useState, useEffect } from 'react';
 import { bookingAPI } from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
 import { Calendar, X, Clock, MapPin, CreditCard, QrCode } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
 export default function MyBookingsPage() {
+  const { t, lang } = useLanguage();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState('');
@@ -25,23 +27,23 @@ export default function MyBookingsPage() {
   const flash = (setter, text) => { setter(text); setTimeout(() => setter(''), 3000); };
 
   const handleCancel = async (id) => {
-    if (!confirm('Отменить бронирование? Возврат будет рассчитан пропорционально.')) return;
+    if (!confirm(t('cancelConfirm'))) return;
     setCancelling(id);
     try {
       const res = await bookingAPI.cancel(id);
-      flash(setMsg, `Бронирование отменено. Возврат: ${res.data.refundAmount?.toFixed(2) || 0} MDL`);
+      flash(setMsg, `${t('cancelledRefund')} ${res.data.refundAmount?.toFixed(2) || 0} MDL`);
       load();
     } catch (err) {
-      flash(setError, err.response?.data?.message || 'Ошибка отмены');
+      flash(setError, err.response?.data?.message || t('error'));
     }
     setCancelling(null);
   };
 
   const statusLabels = {
-    active: 'Активно',
-    completed: 'Завершено',
-    cancelled: 'Отменено',
-    expired: 'Истекло',
+    active: t('active'),
+    completed: t('completed'),
+    cancelled: t('cancelled'),
+    expired: t('expired'),
   };
   const statusColors = {
     active: 'badge-green',
@@ -49,13 +51,13 @@ export default function MyBookingsPage() {
     cancelled: 'badge-red',
     expired: 'badge-yellow',
   };
-  const typeLabels = { reservation: 'Разовое', subscription: 'Абонемент' };
+  const typeLabels = { reservation: t('oneTime'), subscription: t('subscription') };
 
   if (loading) return <div className="loading"><div className="spinner" /></div>;
 
   return (
     <div className="page">
-      <h2><Calendar size={22} style={{ verticalAlign: 'middle' }} /> Мои бронирования</h2>
+      <h2><Calendar size={22} style={{ verticalAlign: 'middle' }} /> {t('myBookingsTitle')}</h2>
 
       {msg && <div className="alert alert-success">{msg}</div>}
       {error && <div className="alert alert-error">{error}</div>}
@@ -63,7 +65,7 @@ export default function MyBookingsPage() {
       {bookings.length === 0 ? (
         <div className="card">
           <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: 20 }}>
-            У вас пока нет бронирований.
+            {t('noBookingsYet')}
           </p>
         </div>
       ) : (
@@ -80,17 +82,17 @@ export default function MyBookingsPage() {
                 </div>
 
                 <p style={{ margin: '4px 0', fontSize: '0.95rem' }}>
-                  <MapPin size={14} /> {b.parkingLotId?.name || 'Парковка'} — место{' '}
+                  <MapPin size={14} /> {b.parkingLotId?.name || t('parkingLabel')} — {t('spot')}{' '}
                   <strong>{b.parkingSpotId?.spotNumber || '?'}</strong>
                 </p>
 
                 <p style={{ margin: '4px 0', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
                   <Clock size={14} />{' '}
-                  {new Date(b.startTime).toLocaleString('ru')} — {new Date(b.endTime).toLocaleString('ru')}
+                  {new Date(b.startTime).toLocaleString(lang)} — {new Date(b.endTime).toLocaleString(lang)}
                 </p>
 
                 <p style={{ margin: '4px 0', fontSize: '0.9rem' }}>
-                  <CreditCard size={14} /> Стоимость:{' '}
+                  <CreditCard size={14} /> {t('costLabel')}:{' '}
                   <strong>{b.totalPrice?.toFixed(2)} MDL</strong>
                 </p>
               </div>
@@ -101,7 +103,7 @@ export default function MyBookingsPage() {
                     className="btn btn-sm btn-secondary"
                     onClick={() => setShowQR(showQR === b._id ? null : b._id)}
                   >
-                    <QrCode size={14} /> QR-код
+                    <QrCode size={14} /> {t('qrCode')}
                   </button>
                 )}
                 {b.status === 'active' && (
@@ -110,7 +112,7 @@ export default function MyBookingsPage() {
                     onClick={() => handleCancel(b._id)}
                     disabled={cancelling === b._id}
                   >
-                    <X size={14} /> {cancelling === b._id ? 'Отменяем...' : 'Отменить'}
+                    <X size={14} /> {cancelling === b._id ? t('cancelling') : t('cancelBooking')}
                   </button>
                 )}
               </div>
@@ -125,7 +127,7 @@ export default function MyBookingsPage() {
                       includeMargin
                     />
                     <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: 8 }}>
-                      Покажите QR-код на входе в парковку
+                      {t('showQRAtEntrance')}
                     </p>
                   </div>
                 </div>

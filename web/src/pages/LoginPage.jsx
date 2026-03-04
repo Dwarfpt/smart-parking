@@ -2,15 +2,16 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function LoginPage() {
   const { login, loginWithGoogle, pendingOtp } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Redirect to OTP page when OTP is required
   useEffect(() => {
     if (pendingOtp) navigate('/verify-otp');
   }, [pendingOtp, navigate]);
@@ -25,13 +26,12 @@ export default function LoginPage() {
         navigate(data.user?.role === 'admin' ? '/admin' : '/parkings');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Ошибка входа');
+      setError(err.response?.data?.message || t('loginError'));
     } finally {
       setLoading(false);
     }
   };
 
-  // Google Sign-In callback
   useEffect(() => {
     if (!window.google?.accounts) return;
     window.google.accounts.id.initialize({
@@ -42,7 +42,7 @@ export default function LoginPage() {
           const data = await loginWithGoogle(response.credential);
           navigate(data.user?.role === 'admin' ? '/admin' : '/parkings');
         } catch (err) {
-          setError(err.response?.data?.message || 'Ошибка входа через Google');
+          setError(err.response?.data?.message || t('loginErrorGoogle'));
         } finally {
           setLoading(false);
         }
@@ -50,7 +50,7 @@ export default function LoginPage() {
     });
     window.google.accounts.id.renderButton(
       document.getElementById('google-signin-btn'),
-      { theme: 'outline', size: 'large', width: '100%', text: 'signin_with', locale: 'ru' }
+      { theme: 'outline', size: 'large', width: '100%', text: 'signin_with' }
     );
   }, []);
 
@@ -58,13 +58,13 @@ export default function LoginPage() {
     <div className="auth-page">
       <div className="auth-card">
         <h1 className="auth-title">🅿️ Smart Parking</h1>
-        <p className="auth-subtitle">Войдите в свой аккаунт</p>
+        <p className="auth-subtitle">{t('authLogin')}</p>
 
         {error && <div className="alert alert-error">{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Email</label>
+            <label>{t('authEmail')}</label>
             <input
               type="email"
               className="form-control"
@@ -75,7 +75,7 @@ export default function LoginPage() {
             />
           </div>
           <div className="form-group">
-            <label>Пароль</label>
+            <label>{t('authPassword')}</label>
             <input
               type="password"
               className="form-control"
@@ -86,20 +86,20 @@ export default function LoginPage() {
             />
           </div>
           <button className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
-            {loading ? 'Вход...' : 'Войти'}
+            {loading ? t('authEntering') : t('authEnter')}
           </button>
         </form>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '16px 0' }}>
           <div style={{ flex: 1, height: 1, background: 'var(--border-color)' }} />
-          <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>или</span>
+          <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{t('or')}</span>
           <div style={{ flex: 1, height: 1, background: 'var(--border-color)' }} />
         </div>
 
         <div id="google-signin-btn" style={{ display: 'flex', justifyContent: 'center' }} />
 
         <p style={{ textAlign: 'center', marginTop: 16, fontSize: '0.9rem' }}>
-          Нет аккаунта? <Link to="/register">Зарегистрироваться</Link>
+          {t('authNoAccount')} <Link to="/register">{t('authRegisterLink')}</Link>
         </p>
       </div>
     </div>

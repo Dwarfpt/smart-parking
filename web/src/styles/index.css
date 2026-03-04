@@ -288,6 +288,22 @@ a:hover { text-decoration: underline; }
   color: var(--text-primary);
 }
 
+input, select, textarea {
+  background: var(--input-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
 .form-control:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
@@ -369,6 +385,12 @@ tr:hover {
 .badge-blue { background: #dbeafe; color: #1e40af; }
 .badge-gray { background: var(--gray-200); color: var(--gray-600); }
 
+[data-theme="dark"] .badge-green { background: #064e3b; color: #6ee7b7; }
+[data-theme="dark"] .badge-red { background: #7f1d1d; color: #fca5a5; }
+[data-theme="dark"] .badge-yellow { background: #78350f; color: #fcd34d; }
+[data-theme="dark"] .badge-blue { background: #1e3a5f; color: #93c5fd; }
+[data-theme="dark"] .badge-gray { background: #334155; color: #94a3b8; }
+
 /* ============ PARKING SPOTS GRID ============ */
 .spots-grid {
   display: grid;
@@ -401,6 +423,11 @@ tr:hover {
   background: #fffbeb;
   cursor: not-allowed;
 }
+
+[data-theme="dark"] .spot-card.free { background: #064e3b; }
+[data-theme="dark"] .spot-card.occupied { background: #7f1d1d; }
+[data-theme="dark"] .spot-card.reserved { background: #78350f; }
+[data-theme="dark"] .spot-card.selected { background: #1e3a5f; }
 
 .spot-card.selected {
   border-color: var(--primary);
@@ -617,6 +644,10 @@ tr:hover {
   color: #1e40af;
   border: 1px solid #93c5fd;
 }
+
+[data-theme="dark"] .alert-error { background: #7f1d1d; color: #fca5a5; border-color: #991b1b; }
+[data-theme="dark"] .alert-success { background: #064e3b; color: #6ee7b7; border-color: #065f46; }
+[data-theme="dark"] .alert-info { background: #1e3a5f; color: #93c5fd; border-color: #1e40af; }
 
 /* ============ RESPONSIVE ============ */
 @media (max-width: 768px) {

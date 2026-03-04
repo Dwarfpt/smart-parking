@@ -1,6 +1,7 @@
 // Управление тарифами — CRUD, абонементы, пиковые часы
 import { useState, useEffect } from 'react';
 import { tariffAPI } from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
 import { Tag, Plus, Edit2, Trash2, Check, X } from 'lucide-react';
 
 const emptyForm = {
@@ -10,6 +11,7 @@ const emptyForm = {
 };
 
 export default function TariffsAdminPage() {
+  const { t } = useLanguage();
   const [tariffs, setTariffs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ ...emptyForm });
@@ -47,44 +49,44 @@ export default function TariffsAdminPage() {
     try {
       if (editing) {
         await tariffAPI.update(editing, data);
-        flash(setMsg, 'Тариф обновлён');
+        flash(setMsg, t('tariffUpdated'));
       } else {
         await tariffAPI.create(data);
-        flash(setMsg, 'Тариф создан');
+        flash(setMsg, t('tariffCreated'));
       }
       setShowForm(false);
       setEditing(null);
       setForm({ ...emptyForm });
       load();
     } catch (err) {
-      flash(setError, err.response?.data?.message || 'Ошибка');
+      flash(setError, err.response?.data?.message || t('error'));
     }
   };
 
-  const handleEdit = (t) => {
-    setEditing(t._id);
+  const handleEdit = (tf) => {
+    setEditing(tf._id);
     setForm({
-      name: t.name,
-      pricePerHour: t.pricePerHour || '',
-      peakPricePerHour: t.peakPricePerHour || '',
-      peakHoursStart: t.peakHoursStart || '08:00',
-      peakHoursEnd: t.peakHoursEnd || '18:00',
-      subscriptionWeek: t.subscriptionWeek || '',
-      subscriptionMonth: t.subscriptionMonth || '',
-      subscription3Months: t.subscription3Months || '',
-      subscriptionYear: t.subscriptionYear || '',
+      name: tf.name,
+      pricePerHour: tf.pricePerHour || '',
+      peakPricePerHour: tf.peakPricePerHour || '',
+      peakHoursStart: tf.peakHoursStart || '08:00',
+      peakHoursEnd: tf.peakHoursEnd || '18:00',
+      subscriptionWeek: tf.subscriptionWeek || '',
+      subscriptionMonth: tf.subscriptionMonth || '',
+      subscription3Months: tf.subscription3Months || '',
+      subscriptionYear: tf.subscriptionYear || '',
     });
     setShowForm(true);
   };
 
   const handleDelete = async (id, name) => {
-    if (!confirm(`Удалить тариф "${name}"?`)) return;
+    if (!confirm(`${t('deleteTariffConfirm')} "${name}"?`)) return;
     try {
       await tariffAPI.delete(id);
-      flash(setMsg, 'Тариф удалён');
+      flash(setMsg, t('tariffDeleted'));
       load();
     } catch (err) {
-      flash(setError, err.response?.data?.message || 'Ошибка');
+      flash(setError, err.response?.data?.message || t('error'));
     }
   };
 
@@ -93,12 +95,12 @@ export default function TariffsAdminPage() {
   return (
     <div className="page">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h2><Tag size={22} style={{ verticalAlign: 'middle' }} /> Тарифы</h2>
+        <h2><Tag size={22} style={{ verticalAlign: 'middle' }} /> {t('adminTariffs')}</h2>
         <button
           className="btn btn-primary btn-sm"
           onClick={() => { setShowForm(!showForm); setEditing(null); setForm({ ...emptyForm }); }}
         >
-          {showForm ? <><X size={16} /> Закрыть</> : <><Plus size={16} /> Новый тариф</>}
+          {showForm ? <><X size={16} /> {t('close')}</> : <><Plus size={16} /> {t('newTariff')}</>}
         </button>
       </div>
 
@@ -107,57 +109,57 @@ export default function TariffsAdminPage() {
 
       {showForm && (
         <div className="card" style={{ maxWidth: 600, marginBottom: 20 }}>
-          <h3>{editing ? 'Редактировать тариф' : 'Новый тариф'}</h3>
+          <h3>{editing ? t('editTariff') : t('newTariff')}</h3>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label>Название</label>
+              <label>{t('tariffName')}</label>
               <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required placeholder="Стандарт" />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div className="form-group">
-                <label>Цена/час (MDL)</label>
+                <label>{t('tariffPricePerHour')}</label>
                 <input type="number" step="0.01" value={form.pricePerHour} onChange={(e) => setForm({ ...form, pricePerHour: e.target.value })} required />
               </div>
               <div className="form-group">
-                <label>Пиковая цена/час</label>
+                <label>{t('tariffPeakPrice')}</label>
                 <input type="number" step="0.01" value={form.peakPricePerHour} onChange={(e) => setForm({ ...form, peakPricePerHour: e.target.value })} />
               </div>
               <div className="form-group">
-                <label>Пик с</label>
+                <label>{t('tariffPeakFrom')}</label>
                 <input type="time" value={form.peakHoursStart} onChange={(e) => setForm({ ...form, peakHoursStart: e.target.value })} />
               </div>
               <div className="form-group">
-                <label>Пик до</label>
+                <label>{t('tariffPeakTo')}</label>
                 <input type="time" value={form.peakHoursEnd} onChange={(e) => setForm({ ...form, peakHoursEnd: e.target.value })} />
               </div>
             </div>
 
-            <h4 style={{ marginTop: 12, marginBottom: 8 }}>Абонементы (MDL)</h4>
+            <h4 style={{ marginTop: 12, marginBottom: 8 }}>{t('tariffSubscriptions')}</h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12 }}>
               <div className="form-group">
-                <label>Неделя</label>
+                <label>{t('tariffWeekLabel')}</label>
                 <input type="number" value={form.subscriptionWeek} onChange={(e) => setForm({ ...form, subscriptionWeek: e.target.value })} />
               </div>
               <div className="form-group">
-                <label>Месяц</label>
+                <label>{t('tariffMonthLabel')}</label>
                 <input type="number" value={form.subscriptionMonth} onChange={(e) => setForm({ ...form, subscriptionMonth: e.target.value })} />
               </div>
               <div className="form-group">
-                <label>3 месяца</label>
+                <label>{t('tariff3MonthsLabel')}</label>
                 <input type="number" value={form.subscription3Months} onChange={(e) => setForm({ ...form, subscription3Months: e.target.value })} />
               </div>
               <div className="form-group">
-                <label>Год</label>
+                <label>{t('tariffYearLabel')}</label>
                 <input type="number" value={form.subscriptionYear} onChange={(e) => setForm({ ...form, subscriptionYear: e.target.value })} />
               </div>
             </div>
 
             <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
               <button type="submit" className="btn btn-primary">
-                <Check size={16} /> {editing ? 'Сохранить' : 'Создать'}
+                <Check size={16} /> {editing ? t('save') : t('create')}
               </button>
               <button type="button" className="btn btn-secondary" onClick={() => { setShowForm(false); setEditing(null); }}>
-                Отмена
+                {t('cancel')}
               </button>
             </div>
           </form>
@@ -168,34 +170,34 @@ export default function TariffsAdminPage() {
         <table>
           <thead>
             <tr>
-              <th>Название</th>
-              <th>Цена/час</th>
-              <th>Пиковая</th>
-              <th>Пик часы</th>
-              <th>Абон. нед.</th>
-              <th>Абон. мес.</th>
-              <th>Абон. 3 мес.</th>
-              <th>Абон. год</th>
-              <th>Действия</th>
+              <th>{t('tariffName')}</th>
+              <th>{t('pricePerHourHeader')}</th>
+              <th>{t('peakPriceHeader')}</th>
+              <th>{t('peakHoursHeader')}</th>
+              <th>{t('subWeekHeader')}</th>
+              <th>{t('subMonthHeader')}</th>
+              <th>{t('sub3MonthsHeader')}</th>
+              <th>{t('subYearHeader')}</th>
+              <th>{t('actions')}</th>
             </tr>
           </thead>
           <tbody>
-            {tariffs.map((t) => (
-              <tr key={t._id}>
-                <td><strong>{t.name}</strong></td>
-                <td>{t.pricePerHour} MDL</td>
-                <td>{t.peakPricePerHour ? `${t.peakPricePerHour} MDL` : '—'}</td>
-                <td>{t.peakHoursStart && t.peakHoursEnd ? `${t.peakHoursStart}–${t.peakHoursEnd}` : '—'}</td>
-                <td>{t.subscriptionWeek || '—'}</td>
-                <td>{t.subscriptionMonth || '—'}</td>
-                <td>{t.subscription3Months || '—'}</td>
-                <td>{t.subscriptionYear || '—'}</td>
+            {tariffs.map((tf) => (
+              <tr key={tf._id}>
+                <td><strong>{tf.name}</strong></td>
+                <td>{tf.pricePerHour} MDL</td>
+                <td>{tf.peakPricePerHour ? `${tf.peakPricePerHour} MDL` : '—'}</td>
+                <td>{tf.peakHoursStart && tf.peakHoursEnd ? `${tf.peakHoursStart}–${tf.peakHoursEnd}` : '—'}</td>
+                <td>{tf.subscriptionWeek || '—'}</td>
+                <td>{tf.subscriptionMonth || '—'}</td>
+                <td>{tf.subscription3Months || '—'}</td>
+                <td>{tf.subscriptionYear || '—'}</td>
                 <td>
                   <div style={{ display: 'flex', gap: 4 }}>
-                    <button className="btn btn-secondary btn-sm" onClick={() => handleEdit(t)}>
+                    <button className="btn btn-secondary btn-sm" onClick={() => handleEdit(tf)}>
                       <Edit2 size={14} />
                     </button>
-                    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(t._id, t.name)}>
+                    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(tf._id, tf.name)}>
                       <Trash2 size={14} />
                     </button>
                   </div>
@@ -203,7 +205,7 @@ export default function TariffsAdminPage() {
               </tr>
             ))}
             {tariffs.length === 0 && (
-              <tr><td colSpan="9" style={{ textAlign: 'center', color: 'var(--gray-500)' }}>Нет тарифов</td></tr>
+              <tr><td colSpan="9" style={{ textAlign: 'center', color: 'var(--gray-500)' }}>{t('noTariffs')}</td></tr>
             )}
           </tbody>
         </table>

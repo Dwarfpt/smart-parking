@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { ThemeProvider } from '../context/ThemeContext';
+import { LanguageProvider } from '../context/LanguageContext';
 import App from '../App';
 
 function renderApp(authValue = {}) {
@@ -21,11 +22,13 @@ function renderApp(authValue = {}) {
   };
   return render(
     <ThemeProvider>
-      <AuthContext.Provider value={defaultAuth}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </AuthContext.Provider>
+      <LanguageProvider>
+        <AuthContext.Provider value={defaultAuth}>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </AuthContext.Provider>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }
