@@ -117,11 +117,11 @@ export default function UsersAdminPage() {
           <thead>
             <tr>
               <th>{t('authName')}</th>
-              <th>Email</th>
+              <th>{t('authEmail')}</th>
               <th>{t('authPhone')}</th>
               <th>{t('role')}</th>
               <th>{t('emailVerified')}</th>
-              <th>2FA</th>
+              <th>{t('twoFAHeader')}</th>
               <th>{t('balance')}</th>
               <th>{t('registration')}</th>
               <th>{t('actions')}</th>

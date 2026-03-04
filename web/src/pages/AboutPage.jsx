@@ -63,7 +63,7 @@ export default function AboutPage() {
         <h2 style={{ textAlign: 'center', marginBottom: 24 }}>{t('aboutAuthor')}</h2>
         <div className="card" style={{ maxWidth: 500, margin: '0 auto', textAlign: 'center', padding: 32 }}>
           <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', fontWeight: 700, margin: '0 auto 16px' }}>
-            ДЭ
+            {t('aboutAuthorName').split(' ').map(w => w[0]).join('')}
           </div>
           <h3 style={{ marginBottom: 4 }}>{t('aboutAuthorName')}</h3>
           <p style={{ color: 'var(--text-secondary)', marginBottom: 16 }}>{t('aboutAuthorGroup')}</p>

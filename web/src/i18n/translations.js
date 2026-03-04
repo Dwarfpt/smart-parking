@@ -49,6 +49,7 @@ const translations = {
   tariffNamePlaceholder: { ru: 'Стандарт', ro: 'Standard', en: 'Standard' },
   emailVerifiedShort: { ru: 'Подтв.', ro: 'Confirmat', en: 'Verified' },
   emailNotVerified: { ru: 'Не подтв.', ro: 'Neconfirmat', en: 'Not verified' },
+  twoFAHeader: { ru: '2FA', ro: '2FA', en: '2FA' },
 
   // ===== НАВИГАЦИЯ =====
   navParkings: { ru: 'Парковки', ro: 'Parcări', en: 'Parkings' },

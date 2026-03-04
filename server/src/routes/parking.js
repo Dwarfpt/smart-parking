@@ -73,8 +73,10 @@ router.get('/', async (req, res) => {
           ...lot,
           spotCounts: counts,
           freeSpots: counts.free,
+          occupiedSpots: counts.occupied,
+          reservedSpots: counts.reserved,
           tariff: tariff
-            ? { pricePerHour: tariff.pricePerHour, name: tariff.name }
+            ? { pricePerHour: tariff.pricePerHour, name: tariff.name, subscriptionWeek: tariff.subscriptionWeek }
             : null,
         };
       })

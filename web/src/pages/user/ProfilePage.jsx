@@ -100,7 +100,7 @@ export default function ProfilePage() {
           <div className="stat-value">{user?.balance?.toFixed(2) || '0.00'} MDL</div>
         </div>
         <div className="stat-card">
-          <div className="stat-label">Email</div>
+          <div className="stat-label">{t('authEmail')}</div>
           <div className="stat-value" style={{ fontSize: '1rem' }}>{user?.email}</div>
         </div>
         <div className="stat-card">
@@ -130,7 +130,7 @@ export default function ProfilePage() {
               <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
             </div>
             <div className="form-group">
-              <label>Email</label>
+              <label>{t('authEmail')}</label>
               <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required />
             </div>
             <div className="form-group">
