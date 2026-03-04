@@ -2,7 +2,6 @@
 const router = require('express').Router();
 const { auth, requireRole } = require('../middleware/auth');
 const IoTDevice = require('../models/IoTDevice');
-const ParkingSpot = require('../models/ParkingSpot');
 
 // — Список устройств —
 router.get('/', auth, requireRole('admin'), async (req, res) => {

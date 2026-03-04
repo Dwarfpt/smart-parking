@@ -26,8 +26,8 @@ export default function OtpPage() {
   // Countdown timer for resend
   useEffect(() => {
     if (resendTimer <= 0) return;
-    const t = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
-    return () => clearTimeout(t);
+    const timerId = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
+    return () => clearTimeout(timerId);
   }, [resendTimer]);
 
   const handleChange = (idx, value) => {

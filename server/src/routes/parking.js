@@ -1,8 +1,5 @@
 // Маршруты парковок — список, детали, места (публичные)
 const router = require('express').Router();
-const { body, param, query } = require('express-validator');
-const { auth } = require('../middleware/auth');
-const { validate } = require('../middleware/validate');
 const ParkingLot = require('../models/ParkingLot');
 const ParkingSpot = require('../models/ParkingSpot');
 const Tariff = require('../models/Tariff');

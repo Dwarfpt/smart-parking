@@ -1,5 +1,5 @@
 // О проекте — описание Smart Parking, возможности, технологии
-import { Car, MapPin, Users, Shield, Zap, Mail, Phone, Github } from 'lucide-react';
+import { Car, MapPin, Users, Shield, Zap, Mail, Phone } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function AboutPage() {

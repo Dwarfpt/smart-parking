@@ -34,7 +34,6 @@ const translations = {
   tariffYearLabel: { ru: 'Год', ro: 'An', en: 'Year' },
   totalOf: { ru: 'из', ro: 'din', en: 'of' },
   total: { ru: 'Всего', ro: 'Total', en: 'Total' },
-  of: { ru: 'из', ro: 'din', en: 'of' },
   search: { ru: 'Поиск', ro: 'Căutare', en: 'Search' },
   status: { ru: 'Статус', ro: 'Status', en: 'Status' },
   date: { ru: 'Дата', ro: 'Data', en: 'Date' },
@@ -379,7 +378,6 @@ const translations = {
   until: { ru: 'до', ro: 'până la', en: 'until' },
 
   // ===== ПРОФИЛЬ (доп) =====
-  profileSaved: { ru: 'Сохранить', ro: 'Salvează', en: 'Save' },
 
   // ===== ПОДДЕРЖКА (доп) =====
   supportSelectOrCreate: { ru: 'Выберите обращение или создайте новое', ro: 'Selectați o cerere sau creați una nouă', en: 'Select a ticket or create a new one' },

@@ -1,6 +1,6 @@
 // Управление парковками — создание, редактирование, деактивация
 import { useState, useEffect } from 'react';
-import { adminAPI, tariffAPI } from '../../services/api';
+import { adminAPI, tariffAPI, parkingAPI } from '../../services/api';
 import { useLanguage } from '../../context/LanguageContext';
 import { MapPin, Plus, Edit2, Trash2, Check, X } from 'lucide-react';
 
@@ -23,20 +23,12 @@ export default function ParkingsAdminPage() {
   const load = async () => {
     try {
       const [lotsRes, tariffsRes] = await Promise.all([
-        adminAPI.getParkings ? adminAPI.getParkings() : adminAPI.getBookings(), // fallback
+        parkingAPI.getAll(),
         tariffAPI.getAll(),
       ]);
-      // getParkings may not exist, use parking API
+      setLots(lotsRes.data.parkingLots || []);
       setTariffs(tariffsRes.data.tariffs || []);
     } catch { /* ignore */ }
-
-    // Load lots via parking API
-    try {
-      const { parkingAPI } = await import('../../services/api');
-      const res = await parkingAPI.getAll();
-      setLots(res.data.parkingLots || []);
-    } catch { /* ignore */ }
-
     setLoading(false);
   };
 

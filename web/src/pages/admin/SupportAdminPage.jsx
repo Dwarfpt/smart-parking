@@ -1,6 +1,6 @@
 // Поддержка (админ) — все тикеты, ответы пользователям
 import { useState, useEffect, useRef } from 'react';
-import { adminAPI, supportAPI } from '../../services/api';
+import { supportAPI } from '../../services/api';
 import { useLanguage } from '../../context/LanguageContext';
 import { MessageSquare, Send, CheckCircle } from 'lucide-react';
 

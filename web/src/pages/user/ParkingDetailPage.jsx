@@ -124,7 +124,7 @@ export default function ParkingDetailPage() {
   if (loading) return <div className="loading"><div className="spinner" /></div>;
   if (!lot) return <div className="page"><p>{t('parkingNotFound')}</p></div>;
 
-  const lotTariff = tariffs.find((t) => t._id === lot.tariff?._id || t._id === lot.tariff) || lot.tariff || tariffs[0];
+  const lotTariff = tariffs.find((tf) => tf._id === lot.tariff?._id || tf._id === lot.tariff) || lot.tariff || tariffs[0];
 
   return (
     <div className="page">

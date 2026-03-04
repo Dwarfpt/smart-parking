@@ -5,7 +5,6 @@ const { auth } = require('../middleware/auth');
 const { validate } = require('../middleware/validate');
 const Booking = require('../models/Booking');
 const ParkingSpot = require('../models/ParkingSpot');
-const ParkingLot = require('../models/ParkingLot');
 const Tariff = require('../models/Tariff');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');

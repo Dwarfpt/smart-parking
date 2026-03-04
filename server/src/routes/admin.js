@@ -196,14 +196,12 @@ router.put(
   async (req, res) => {
     try {
       const { name, email, phone, role, isActive, isEmailVerified, twoFactorEnabled } = req.body;
-      const updates = {};
-      if (name !== undefined) updates.name = name;
-      if (email !== undefined) updates.email = email;
-      if (phone !== undefined) updates.phone = phone;
-      if (role !== undefined) updates.role = role;
-      if (isActive !== undefined) updates.isActive = isActive;
-      if (isEmailVerified !== undefined) updates.isEmailVerified = isEmailVerified;
-      if (twoFactorEnabled !== undefined) updates.twoFactorEnabled = twoFactorEnabled;
+
+      // Собираем только переданные поля для обновления
+      const fields = { name, email, phone, role, isActive, isEmailVerified, twoFactorEnabled };
+      const updates = Object.fromEntries(
+        Object.entries(fields).filter(([, v]) => v !== undefined)
+      );
 
       const user = await User.findByIdAndUpdate(req.params.id, updates, {
         new: true,
@@ -240,6 +238,12 @@ router.delete('/users/:id', async (req, res) => {
     await Booking.updateMany(
       { userId: req.params.id, status: 'active' },
       { status: 'cancelled' }
+    );
+
+    // Освобождаем зарезервированные этим юзером места
+    await ParkingSpot.updateMany(
+      { subscribedUserId: req.params.id },
+      { status: 'free', isSubscription: false, subscribedUserId: null }
     );
 
     res.json({ message: 'User deactivated', user });
