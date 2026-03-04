@@ -10,7 +10,7 @@ import { MapPin, Clock, Car, Calendar, CreditCard } from 'lucide-react';
 export default function ParkingDetailPage() {
   const { id } = useParams();
   const { user, refreshUser } = useAuth();
-  const { t } = useLanguage();
+  const { t, loc } = useLanguage();
   const [lot, setLot] = useState(null);
   const [spots, setSpots] = useState([]);
   const [tariffs, setTariffs] = useState([]);
@@ -128,8 +128,8 @@ export default function ParkingDetailPage() {
 
   return (
     <div className="page">
-      <h2><MapPin size={22} style={{ verticalAlign: 'middle' }} /> {lot.name}</h2>
-      <p style={{ color: 'var(--gray-500)', marginBottom: 16 }}>{lot.address}</p>
+      <h2><MapPin size={22} style={{ verticalAlign: 'middle' }} /> {loc(lot, 'name')}</h2>
+      <p style={{ color: 'var(--gray-500)', marginBottom: 16 }}>{loc(lot, 'address')}</p>
 
       {msg && <div className="alert alert-success">{msg}</div>}
       {error && <div className="alert alert-error">{error}</div>}

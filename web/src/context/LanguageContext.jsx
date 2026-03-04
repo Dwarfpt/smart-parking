@@ -27,8 +27,19 @@ export function LanguageProvider({ children }) {
     [lang],
   );
 
+  // Локализация полей объекта БД (name → nameRo/nameEn, address → addressRo/addressEn)
+  const loc = useCallback(
+    (obj, field) => {
+      if (!obj) return '';
+      if (lang === 'ro') return obj[field + 'Ro'] || obj[field] || '';
+      if (lang === 'en') return obj[field + 'En'] || obj[field] || '';
+      return obj[field] || '';
+    },
+    [lang],
+  );
+
   return (
-    <LanguageContext.Provider value={{ lang, changeLang, t, LANGS, LABELS }}>
+    <LanguageContext.Provider value={{ lang, changeLang, t, loc, LANGS, LABELS }}>
       {children}
     </LanguageContext.Provider>
   );

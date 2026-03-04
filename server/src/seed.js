@@ -27,9 +27,9 @@ const seed = async () => {
     console.log('Пользователи: 3');
 
     // ——— Парковки (Кишинёв) ———
-    const lot1 = await ParkingLot.create({ name: 'Парковка Центр',      address: 'ул. Штефан чел Маре 1, Кишинёв',  description: 'Центральная парковка', location: { type: 'Point', coordinates: [28.8297, 47.0245] }, totalSpots: 8, workingHours: { open: '06:00', close: '23:00' } });
-    const lot2 = await ParkingLot.create({ name: 'Парковка Ботаника',   address: 'бул. Дечебал 10, Кишинёв',        description: 'Район Ботаника',       location: { type: 'Point', coordinates: [28.8453, 47.0140] }, totalSpots: 6, workingHours: { open: '00:00', close: '23:59' } });
-    const lot3 = await ParkingLot.create({ name: 'Парковка Рышкановка', address: 'ул. Московская 15, Кишинёв',      description: 'Возле супермаркета',    location: { type: 'Point', coordinates: [28.8120, 47.0380] }, totalSpots: 4, workingHours: { open: '07:00', close: '22:00' } });
+    const lot1 = await ParkingLot.create({ name: 'Парковка Центр',      nameRo: 'Parcare Centru',       nameEn: 'Center Parking',        address: 'ул. Штефан чел Маре 1, Кишинёв',  addressRo: 'str. Ștefan cel Mare 1, Chișinău',  addressEn: 'Stefan cel Mare st. 1, Chisinau',  description: 'Центральная парковка', location: { type: 'Point', coordinates: [28.8297, 47.0245] }, totalSpots: 8, workingHours: { open: '06:00', close: '23:00' } });
+    const lot2 = await ParkingLot.create({ name: 'Парковка Ботаника',   nameRo: 'Parcare Botanica',     nameEn: 'Botanica Parking',      address: 'бул. Дечебал 10, Кишинёв',        addressRo: 'bd. Decebal 10, Chișinău',          addressEn: 'Decebal blvd. 10, Chisinau',        description: 'Район Ботаника',       location: { type: 'Point', coordinates: [28.8453, 47.0140] }, totalSpots: 6, workingHours: { open: '00:00', close: '23:59' } });
+    const lot3 = await ParkingLot.create({ name: 'Парковка Рышкановка', nameRo: 'Parcare Râșcani',      nameEn: 'Ryshkanovka Parking',   address: 'ул. Московская 15, Кишинёв',      addressRo: 'str. Moscovei 15, Chișinău',        addressEn: 'Moskovskaya st. 15, Chisinau',      description: 'Возле супермаркета',    location: { type: 'Point', coordinates: [28.8120, 47.0380] }, totalSpots: 4, workingHours: { open: '07:00', close: '22:00' } });
     console.log('Парковки: 3');
 
     // ——— Места ———
@@ -45,9 +45,9 @@ const seed = async () => {
     console.log('Места:', s1.length + s2.length + s3.length);
 
     // ——— Тарифы (MDL) ———
-    await Tariff.create({ parkingLotId: lot1._id, name: 'Стандарт Центр',      pricePerHour: 25, subscriptionWeek: 600,  subscriptionMonth: 2000, subscription3Months: 5500, subscriptionYear: 18000, peakMultiplier: 1.5, peakHoursStart: '08:00', peakHoursEnd: '18:00' });
-    await Tariff.create({ parkingLotId: lot2._id, name: 'Стандарт Ботаника',   pricePerHour: 20, subscriptionWeek: 500,  subscriptionMonth: 1700, subscription3Months: 4700, subscriptionYear: 15000, peakMultiplier: 1.3, peakHoursStart: '09:00', peakHoursEnd: '17:00' });
-    await Tariff.create({ parkingLotId: lot3._id, name: 'Эконом Рышкановка',   pricePerHour: 15, subscriptionWeek: 400,  subscriptionMonth: 1300, subscription3Months: 3600, subscriptionYear: 12000, peakMultiplier: 1.2, peakHoursStart: '08:00', peakHoursEnd: '19:00' });
+    await Tariff.create({ parkingLotId: lot1._id, name: 'Стандарт Центр',      nameRo: 'Standard Centru',      nameEn: 'Standard Center',      pricePerHour: 25, subscriptionWeek: 600,  subscriptionMonth: 2000, subscription3Months: 5500, subscriptionYear: 18000, peakMultiplier: 1.5, peakHoursStart: '08:00', peakHoursEnd: '18:00' });
+    await Tariff.create({ parkingLotId: lot2._id, name: 'Стандарт Ботаника',   nameRo: 'Standard Botanica',    nameEn: 'Standard Botanica',    pricePerHour: 20, subscriptionWeek: 500,  subscriptionMonth: 1700, subscription3Months: 4700, subscriptionYear: 15000, peakMultiplier: 1.3, peakHoursStart: '09:00', peakHoursEnd: '17:00' });
+    await Tariff.create({ parkingLotId: lot3._id, name: 'Эконом Рышкановка',   nameRo: 'Econom Râșcani',       nameEn: 'Economy Ryshkanovka',  pricePerHour: 15, subscriptionWeek: 400,  subscriptionMonth: 1300, subscription3Months: 3600, subscriptionYear: 12000, peakMultiplier: 1.2, peakHoursStart: '08:00', peakHoursEnd: '19:00' });
     console.log('Тарифы: 3');
 
     // ——— IoT устройства (ESP32) ———

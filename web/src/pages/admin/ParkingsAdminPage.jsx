@@ -10,7 +10,7 @@ const emptyForm = {
 };
 
 export default function ParkingsAdminPage() {
-  const { t } = useLanguage();
+  const { t, loc } = useLanguage();
   const [lots, setLots] = useState([]);
   const [tariffs, setTariffs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -178,21 +178,21 @@ export default function ParkingsAdminPage() {
         {lots.map((lot) => (
           <div key={lot._id} className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <h3>{lot.name}</h3>
+              <h3>{loc(lot, 'name')}</h3>
               <div style={{ display: 'flex', gap: 4 }}>
                 <button className="btn btn-secondary btn-sm" onClick={() => handleEdit(lot)}>
                   <Edit2 size={14} />
                 </button>
-                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(lot._id, lot.name)}>
+                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(lot._id, loc(lot, 'name'))}>
                   <Trash2 size={14} />
                 </button>
               </div>
             </div>
-            <p style={{ color: 'var(--gray-500)', fontSize: '0.9rem', margin: '4px 0' }}>{lot.address}</p>
+            <p style={{ color: 'var(--gray-500)', fontSize: '0.9rem', margin: '4px 0' }}>{loc(lot, 'address')}</p>
             <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
               <span className="badge badge-blue">{lot.totalSpots} {t('spotsCount')}</span>
               <span className="badge badge-green">{lot.freeSpots || 0} {t('freeCount')}</span>
-              {lot.tariff && <span className="badge badge-yellow">{lot.tariff.name || lot.tariff.pricePerHour + ' MDL' + t('perHour')}</span>}
+              {lot.tariff && <span className="badge badge-yellow">{loc(lot.tariff, 'name') || lot.tariff.pricePerHour + ' MDL' + t('perHour')}</span>}
               <span className="badge badge-purple" style={{ background: '#8b5cf6', color: '#fff' }}>
                 {lot.workingHours?.open} – {lot.workingHours?.close}
               </span>

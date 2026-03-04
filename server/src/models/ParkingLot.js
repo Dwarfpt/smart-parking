@@ -4,7 +4,11 @@ const mongoose = require('mongoose');
 const parkingLotSchema = new mongoose.Schema(
   {
     name:        { type: String, required: true, trim: true },
+    nameRo:      { type: String, default: '', trim: true },
+    nameEn:      { type: String, default: '', trim: true },
     address:     { type: String, required: true, trim: true },
+    addressRo:   { type: String, default: '', trim: true },
+    addressEn:   { type: String, default: '', trim: true },
     description: { type: String, default: '' },
     location: {
       type:        { type: String, enum: ['Point'], default: 'Point' },

@@ -15,7 +15,7 @@ L.Icon.Default.mergeOptions({
 });
 
 export default function ParkingsPage() {
-  const { t } = useLanguage();
+  const { t, loc } = useLanguage();
   const [lots, setLots] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -53,9 +53,9 @@ export default function ParkingsPage() {
               ]}
             >
               <Popup>
-                <strong>{lot.name}</strong>
+                <strong>{loc(lot, 'name')}</strong>
                 <br />
-                {lot.address}
+                {loc(lot, 'address')}
                 <br />
                 {t('freeSpotsLabel')}: <strong>{lot.freeSpots}</strong> / {lot.totalSpots}
                 <br />
@@ -70,9 +70,9 @@ export default function ParkingsPage() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
         {lots.map((lot) => (
           <div key={lot._id} className="card">
-            <h3>{lot.name}</h3>
+            <h3>{loc(lot, 'name')}</h3>
             <p style={{ color: 'var(--gray-500)', fontSize: '0.9rem', margin: '6px 0' }}>
-              {lot.address}
+              {loc(lot, 'address')}
             </p>
             <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
               <span className="badge badge-green">{lot.freeSpots} {t('freeLabel')}</span>

@@ -1,13 +1,13 @@
 // Публичный layout — навбар, футер, для неавторизованных
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Car } from 'lucide-react';
+import { Car, Wallet } from 'lucide-react';
 import ThemeToggle from '../ThemeToggle';
 import LanguageSwitcher from '../LanguageSwitcher';
 import { useLanguage } from '../../context/LanguageContext';
 
 export default function PublicLayout() {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const { t } = useLanguage();
 
   return (
@@ -25,6 +25,9 @@ export default function PublicLayout() {
               <NavLink to="/support">{t('navSupport')}</NavLink>
               <NavLink to="/profile">{t('navProfile')}</NavLink>
               {isAdmin && <NavLink to="/admin">{t('navAdmin')}</NavLink>}
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--secondary)', fontWeight: 600, fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                <Wallet size={14} /> {user?.balance?.toFixed(2) || '0.00'} MDL
+              </span>
             </>
           ) : (
             <>
@@ -34,6 +37,11 @@ export default function PublicLayout() {
           )}
           <LanguageSwitcher />
           <ThemeToggle />
+          {isAuthenticated && (
+            <button className="btn btn-sm btn-secondary" onClick={logout}>
+              {t('navLogout')}
+            </button>
+          )}
         </nav>
       </header>
       <Outlet />

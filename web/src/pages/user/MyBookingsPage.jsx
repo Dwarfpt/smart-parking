@@ -6,7 +6,7 @@ import { Calendar, X, Clock, MapPin, CreditCard, QrCode } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
 export default function MyBookingsPage() {
-  const { t, lang } = useLanguage();
+  const { t, lang, loc } = useLanguage();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState('');
@@ -82,7 +82,7 @@ export default function MyBookingsPage() {
                 </div>
 
                 <p style={{ margin: '4px 0', fontSize: '0.95rem' }}>
-                  <MapPin size={14} /> {b.parkingLotId?.name || t('parkingLabel')} — {t('spot')}{' '}
+                  <MapPin size={14} /> {loc(b.parkingLotId, 'name') || t('parkingLabel')} — {t('spot')}{' '}
                   <strong>{b.parkingSpotId?.spotNumber || '?'}</strong>
                 </p>
 

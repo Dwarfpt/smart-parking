@@ -5,6 +5,8 @@ const tariffSchema = new mongoose.Schema(
   {
     parkingLotId: { type: mongoose.Schema.Types.ObjectId, ref: 'ParkingLot', required: true },
     name:         { type: String, default: 'Стандартный' },
+    nameRo:       { type: String, default: '' },
+    nameEn:       { type: String, default: '' },
     pricePerHour: { type: Number, required: true, min: 0 },
 
     // Цены абонементов (MDL)
