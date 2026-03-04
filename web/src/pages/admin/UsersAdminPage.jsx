@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { adminAPI } from '../../services/api';
 import { useLanguage } from '../../context/LanguageContext';
-import { Users, Search, Edit2, Trash2, DollarSign, X, Check } from 'lucide-react';
+import { Users, Search, Edit2, Trash2, DollarSign, X, Check, ShieldCheck, ShieldOff, MailCheck, MailX } from 'lucide-react';
 
 export default function UsersAdminPage() {
   const { t, lang } = useLanguage();
@@ -68,6 +68,26 @@ export default function UsersAdminPage() {
     }
   };
 
+  const toggleEmailVerified = async (u) => {
+    try {
+      await adminAPI.updateUser(u._id, { isEmailVerified: !u.isEmailVerified });
+      flash(setMsg, t('userUpdated'));
+      load();
+    } catch (err) {
+      flash(setError, err.response?.data?.message || t('error'));
+    }
+  };
+
+  const toggle2FA = async (u) => {
+    try {
+      await adminAPI.updateUser(u._id, { twoFactorEnabled: !u.twoFactorEnabled });
+      flash(setMsg, t('userUpdated'));
+      load();
+    } catch (err) {
+      flash(setError, err.response?.data?.message || t('error'));
+    }
+  };
+
   const filtered = users.filter(u =>
     u.name.toLowerCase().includes(search.toLowerCase()) ||
     u.email.toLowerCase().includes(search.toLowerCase())
@@ -117,12 +137,30 @@ export default function UsersAdminPage() {
                     <td><input value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} /></td>
                     <td>
                       <select value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}>
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
+                        <option value="user">{t('userRoleBadge')}</option>
+                        <option value="admin">{t('adminRoleBadge')}</option>
                       </select>
                     </td>
-                    <td><span className={`badge ${u.isEmailVerified ? 'badge-green' : 'badge-red'}`}>{u.isEmailVerified ? t('yes') : t('no')}</span></td>
-                    <td><span className={`badge ${u.twoFactorEnabled ? 'badge-green' : 'badge-gray'}`}>{u.twoFactorEnabled ? t('onBadge') : t('offBadge')}</span></td>
+                    <td>
+                      <button
+                        className={`btn btn-sm ${u.isEmailVerified ? 'btn-success' : 'btn-danger'}`}
+                        onClick={() => toggleEmailVerified(u)}
+                        title={u.isEmailVerified ? t('off') : t('on')}
+                        style={{ padding: '4px 8px' }}
+                      >
+                        {u.isEmailVerified ? <MailCheck size={14} /> : <MailX size={14} />}
+                      </button>
+                    </td>
+                    <td>
+                      <button
+                        className={`btn btn-sm ${u.twoFactorEnabled ? 'btn-success' : 'btn-secondary'}`}
+                        onClick={() => toggle2FA(u)}
+                        title={u.twoFactorEnabled ? t('off') : t('on')}
+                        style={{ padding: '4px 8px' }}
+                      >
+                        {u.twoFactorEnabled ? <ShieldCheck size={14} /> : <ShieldOff size={14} />}
+                      </button>
+                    </td>
                     <td>{u.balance?.toFixed(2)} MDL</td>
                     <td>{new Date(u.createdAt).toLocaleDateString(lang)}</td>
                     <td>
@@ -144,8 +182,26 @@ export default function UsersAdminPage() {
                         {u.role === 'admin' ? t('adminRoleBadge') : t('userRoleBadge')}
                       </span>
                     </td>
-                    <td><span className={`badge ${u.isEmailVerified ? 'badge-green' : 'badge-red'}`}>{u.isEmailVerified ? t('yes') : t('no')}</span></td>
-                    <td><span className={`badge ${u.twoFactorEnabled ? 'badge-green' : 'badge-gray'}`}>{u.twoFactorEnabled ? t('onBadge') : t('offBadge')}</span></td>
+                    <td>
+                      <button
+                        className={`btn btn-sm ${u.isEmailVerified ? 'btn-success' : 'btn-danger'}`}
+                        onClick={() => toggleEmailVerified(u)}
+                        title={u.isEmailVerified ? t('off') : t('on')}
+                        style={{ padding: '4px 8px' }}
+                      >
+                        {u.isEmailVerified ? <MailCheck size={14} /> : <MailX size={14} />}
+                      </button>
+                    </td>
+                    <td>
+                      <button
+                        className={`btn btn-sm ${u.twoFactorEnabled ? 'btn-success' : 'btn-secondary'}`}
+                        onClick={() => toggle2FA(u)}
+                        title={u.twoFactorEnabled ? t('off') : t('on')}
+                        style={{ padding: '4px 8px' }}
+                      >
+                        {u.twoFactorEnabled ? <ShieldCheck size={14} /> : <ShieldOff size={14} />}
+                      </button>
+                    </td>
                     <td>{u.balance?.toFixed(2)} MDL</td>
                     <td>{new Date(u.createdAt).toLocaleDateString(lang)}</td>
                     <td>

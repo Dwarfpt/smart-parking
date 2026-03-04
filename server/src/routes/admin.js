@@ -189,17 +189,21 @@ router.put(
     body('phone').optional().trim(),
     body('role').optional().isIn(['user', 'admin']),
     body('isActive').optional().isBoolean(),
+    body('isEmailVerified').optional().isBoolean(),
+    body('twoFactorEnabled').optional().isBoolean(),
   ],
   validate,
   async (req, res) => {
     try {
-      const { name, email, phone, role, isActive } = req.body;
+      const { name, email, phone, role, isActive, isEmailVerified, twoFactorEnabled } = req.body;
       const updates = {};
       if (name !== undefined) updates.name = name;
       if (email !== undefined) updates.email = email;
       if (phone !== undefined) updates.phone = phone;
       if (role !== undefined) updates.role = role;
       if (isActive !== undefined) updates.isActive = isActive;
+      if (isEmailVerified !== undefined) updates.isEmailVerified = isEmailVerified;
+      if (twoFactorEnabled !== undefined) updates.twoFactorEnabled = twoFactorEnabled;
 
       const user = await User.findByIdAndUpdate(req.params.id, updates, {
         new: true,

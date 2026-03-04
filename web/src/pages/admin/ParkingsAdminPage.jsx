@@ -125,11 +125,11 @@ export default function ParkingsAdminPage() {
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>{t('parkingName')}</label>
-              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required placeholder="Парковка Центр" />
+              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required placeholder={t('parkingNamePlaceholder')} />
             </div>
             <div className="form-group">
               <label>{t('parkingAddress')}</label>
-              <input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} required placeholder="ул. Штефан чел Маре, 1" />
+              <input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} required placeholder={t('parkingAddressPlaceholder')} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div className="form-group">
@@ -149,7 +149,7 @@ export default function ParkingsAdminPage() {
                 <select value={form.tariff} onChange={(e) => setForm({ ...form, tariff: e.target.value })}>
                   <option value="">{t('selectTariff')}</option>
                   {tariffs.map((tf) => (
-                    <option key={tf._id} value={tf._id}>{tf.name} ({tf.pricePerHour} MDL/ч)</option>
+                    <option key={tf._id} value={tf._id}>{tf.name} ({tf.pricePerHour} MDL{t('perHour')})</option>
                   ))}
                 </select>
               </div>
@@ -192,7 +192,7 @@ export default function ParkingsAdminPage() {
             <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
               <span className="badge badge-blue">{lot.totalSpots} {t('spotsCount')}</span>
               <span className="badge badge-green">{lot.freeSpots || 0} {t('freeCount')}</span>
-              {lot.tariff && <span className="badge badge-yellow">{lot.tariff.name || lot.tariff.pricePerHour + ' MDL/ч'}</span>}
+              {lot.tariff && <span className="badge badge-yellow">{lot.tariff.name || lot.tariff.pricePerHour + ' MDL' + t('perHour')}</span>}
               <span className="badge badge-purple" style={{ background: '#8b5cf6', color: '#fff' }}>
                 {lot.workingHours?.open} – {lot.workingHours?.close}
               </span>

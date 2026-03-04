@@ -113,7 +113,7 @@ export default function TariffsAdminPage() {
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>{t('tariffName')}</label>
-              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required placeholder="Стандарт" />
+              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required placeholder={t('tariffNamePlaceholder')} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div className="form-group">

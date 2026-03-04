@@ -42,9 +42,9 @@ export default function AdminLayout() {
           </NavLink>
         </nav>
         <div style={{ marginTop: 'auto', padding: '20px' }}>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-            <LanguageSwitcher />
-            <ThemeToggle />
+          <div style={{ display: 'flex', gap: 8, marginBottom: 10, alignItems: 'center' }}>
+            <LanguageSwitcher sidebar />
+            <ThemeToggle sidebar />
           </div>
           <button className="btn btn-sm btn-secondary" onClick={logout} style={{ width: '100%' }}>
             {t('navLogout')}

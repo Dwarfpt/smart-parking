@@ -42,6 +42,13 @@ const translations = {
   disabled: { ru: 'Выкл', ro: 'Dez', en: 'Off' },
   on: { ru: 'Включить', ro: 'Activează', en: 'Enable' },
   off: { ru: 'Выключить', ro: 'Dezactivează', en: 'Disable' },
+  themeDark: { ru: 'Тёмная тема', ro: 'Temă întunecată', en: 'Dark theme' },
+  themeLight: { ru: 'Светлая тема', ro: 'Temă deschisă', en: 'Light theme' },
+  parkingNamePlaceholder: { ru: 'Парковка Центр', ro: 'Parcare Centru', en: 'Parking Center' },
+  parkingAddressPlaceholder: { ru: 'ул. Штефан чел Маре, 1', ro: 'str. Ștefan cel Mare, 1', en: 'Stefan cel Mare st., 1' },
+  tariffNamePlaceholder: { ru: 'Стандарт', ro: 'Standard', en: 'Standard' },
+  emailVerifiedShort: { ru: 'Подтв.', ro: 'Confirmat', en: 'Verified' },
+  emailNotVerified: { ru: 'Не подтв.', ro: 'Neconfirmat', en: 'Not verified' },
 
   // ===== НАВИГАЦИЯ =====
   navParkings: { ru: 'Парковки', ro: 'Parcări', en: 'Parkings' },
