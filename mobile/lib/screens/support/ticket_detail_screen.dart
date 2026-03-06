@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/support_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/locale_provider.dart';
 import '../../config/theme.dart';
 
 class TicketDetailScreen extends StatefulWidget {
@@ -53,20 +54,22 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<SupportProvider>();
+    final loc = context.watch<LocaleProvider>();
     final ticket = provider.currentTicket;
     final currentUserId = context.read<AuthProvider>().user?.id;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (provider.loading && ticket == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Загрузка...')),
+        appBar: AppBar(title: Text(loc.t('loading'))),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (ticket == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Обращение')),
-        body: const Center(child: Text('Обращение не найдено')),
+        appBar: AppBar(title: Text(loc.t('supportTicket'))),
+        body: Center(child: Text(loc.t('supportNotFound'))),
       );
     }
 
@@ -79,13 +82,13 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
           if (!ticket.isClosed)
             IconButton(
               icon: const Icon(Icons.close),
-              tooltip: 'Закрыть обращение',
+              tooltip: loc.t('supportClose'),
               onPressed: () async {
                 final ok = await provider.closeTicket(ticket.id);
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content:
-                        Text(ok ? 'Обращение закрыто' : 'Ошибка'),
+                        Text(ok ? loc.t('supportClosed2') : loc.t('error')),
                     backgroundColor:
                         ok ? AppTheme.success : AppTheme.danger,
                   ));
@@ -116,7 +119,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                     decoration: BoxDecoration(
                       color: isMe
                           ? AppTheme.primary
-                          : Colors.white,
+                          : isDark ? const Color(0xFF374151) : Colors.white,
                       borderRadius: BorderRadius.only(
                         topLeft: const Radius.circular(14),
                         topRight: const Radius.circular(14),
@@ -144,7 +147,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                       isMe ? Colors.white70 : AppTheme.gray500)),
                         Text(msg.text,
                             style: TextStyle(
-                                color: isMe ? Colors.white : AppTheme.gray800)),
+                                color: isMe ? Colors.white : (isDark ? Colors.white : AppTheme.gray800))),
                       ],
                     ),
                   ),
@@ -156,7 +159,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
             Container(
               padding: const EdgeInsets.fromLTRB(12, 8, 8, 12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDark ? const Color(0xFF1F2937) : Colors.white,
                 boxShadow: [
                   BoxShadow(
                       color: Colors.black12,
@@ -169,8 +172,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                   Expanded(
                     child: TextField(
                       controller: _msgCtrl,
-                      decoration: const InputDecoration(
-                        hintText: 'Сообщение...',
+                      decoration: InputDecoration(
+                        hintText: loc.t('supportReply'),
                         border: InputBorder.none,
                       ),
                       onSubmitted: (_) => _send(),

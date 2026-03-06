@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../providers/booking_provider.dart';
+import '../../providers/locale_provider.dart';
 import '../../config/theme.dart';
 import '../../models/booking.dart';
 
@@ -45,38 +46,39 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<BookingProvider>();
+    final loc = context.watch<LocaleProvider>();
     final bookings = provider.bookings;
     return Column(
       children: [
         TabBar(
           controller: _tabCtrl,
           labelColor: AppTheme.primary,
-          tabs: const [
-            Tab(text: 'Все'),
-            Tab(text: 'Активные'),
-            Tab(text: 'Завершённые'),
+          tabs: [
+            Tab(text: loc.t('bookingsAll')),
+            Tab(text: loc.t('bookingsActive')),
+            Tab(text: loc.t('bookingsCompleted')),
           ],
         ),
         Expanded(
           child: provider.loading
               ? const Center(child: CircularProgressIndicator())
               : bookings.isEmpty
-                  ? const Center(
-                      child: Text('Нет бронирований',
-                          style: TextStyle(fontSize: 16, color: AppTheme.gray500)))
+                  ? Center(
+                      child: Text(loc.t('bookingsEmpty'),
+                          style: const TextStyle(fontSize: 16, color: AppTheme.gray500)))
                   : RefreshIndicator(
                       onRefresh: () async => _load(),
                       child: ListView.builder(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         itemCount: bookings.length,
                         itemBuilder: (ctx, i) =>
-                            _BookingCard(booking: bookings[i], onCancel: () async {
+                            _BookingCard(booking: bookings[i], loc: loc, onCancel: () async {
                               final ok = await provider.cancelBooking(bookings[i].id);
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                   content: Text(ok
-                                      ? provider.successMessage ?? 'Отменено'
-                                      : provider.error ?? 'Ошибка'),
+                                      ? provider.successMessage ?? loc.t('bookingsCancelled')
+                                      : provider.error ?? loc.t('error')),
                                   backgroundColor: ok ? AppTheme.success : AppTheme.danger,
                                 ));
                               }
@@ -91,9 +93,10 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
 
 class _BookingCard extends StatelessWidget {
   final Booking booking;
+  final LocaleProvider loc;
   final VoidCallback onCancel;
 
-  const _BookingCard({required this.booking, required this.onCancel});
+  const _BookingCard({required this.booking, required this.loc, required this.onCancel});
 
   Color _statusColor() {
     switch (booking.status) {
@@ -113,13 +116,13 @@ class _BookingCard extends StatelessWidget {
   String _statusLabel() {
     switch (booking.status) {
       case 'active':
-        return 'Активно';
+        return loc.t('bookingsStatusActive');
       case 'completed':
-        return 'Завершено';
+        return loc.t('bookingsStatusCompleted');
       case 'cancelled':
-        return 'Отменено';
+        return loc.t('bookingsStatusCancelled');
       case 'expired':
-        return 'Истекло';
+        return loc.t('bookingsStatusExpired');
       default:
         return booking.status;
     }
@@ -145,7 +148,7 @@ class _BookingCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  booking.isReservation ? 'Разовое' : 'Подписка',
+                  booking.isReservation ? loc.t('bookingsOneTime') : loc.t('bookingsSubscription'),
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
@@ -171,7 +174,7 @@ class _BookingCard extends StatelessWidget {
                   style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
             if (booking.spotInfo != null)
               Text(
-                  'Место #${booking.spotInfo!.spotNumber}, зона ${booking.spotInfo!.zone}, этаж ${booking.spotInfo!.floor}',
+                  '#${booking.spotInfo!.spotNumber}, ${loc.t('bookingsZone')} ${booking.spotInfo!.zone}, ${loc.t('bookingsFloor')} ${booking.spotInfo!.floor}',
                   style: const TextStyle(fontSize: 13, color: AppTheme.gray500)),
             const SizedBox(height: 6),
             Text(
@@ -191,7 +194,7 @@ class _BookingCard extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onCancel,
                   icon: const Icon(Icons.cancel_outlined, size: 18),
-                  label: const Text('Отменить'),
+                  label: Text(loc.t('bookingsCancel')),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.danger,
                     side: const BorderSide(color: AppTheme.danger),

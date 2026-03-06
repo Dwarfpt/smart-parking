@@ -4,6 +4,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import '../../providers/parking_provider.dart';
+import '../../providers/locale_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../config/theme.dart';
 import '../../models/parking_lot.dart';
 
@@ -46,7 +48,15 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ParkingProvider>();
+    final loc = context.watch<LocaleProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
     final lots = provider.parkingLots;
+    final isDark = themeProvider.isDark;
+
+    // Стиль карты: светлый/тёмный
+    final tileUrl = isDark
+        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
     return Scaffold(
       body: Stack(
@@ -59,15 +69,17 @@ class _MapScreenState extends State<MapScreen> {
             ),
             children: [
               TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                urlTemplate: tileUrl,
+                subdomains: const ['a', 'b', 'c'],
                 userAgentPackageName: 'md.smartparking.smart_parking',
               ),
               MarkerLayer(
                 markers: lots.map((lot) {
+                  final hasFree = lot.freeSpots > 0;
                   return Marker(
                     point: LatLng(lot.latitude, lot.longitude),
-                    width: 150,
-                    height: 60,
+                    width: 160,
+                    height: 70,
                     child: GestureDetector(
                       onTap: () => _openParkingDetail(lot),
                       child: Column(
@@ -75,29 +87,35 @@ class _MapScreenState extends State<MapScreen> {
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
+                                horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
+                              color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: hasFree ? AppTheme.success : AppTheme.danger,
+                                width: 1.5,
+                              ),
                               boxShadow: [
                                 BoxShadow(
                                     color: Colors.black26,
-                                    blurRadius: 4,
+                                    blurRadius: 6,
                                     offset: const Offset(0, 2)),
                               ],
                             ),
                             child: Column(
                               children: [
                                 Text(lot.name,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         fontSize: 11,
-                                        fontWeight: FontWeight.bold),
+                                        fontWeight: FontWeight.bold,
+                                        color: isDark ? Colors.white : AppTheme.gray800),
                                     overflow: TextOverflow.ellipsis),
+                                const SizedBox(height: 2),
                                 Text(
-                                  '${lot.freeSpots} свободных',
+                                  '${lot.freeSpots} ${loc.t('mapFreeSpots')}',
                                   style: TextStyle(
                                     fontSize: 10,
-                                    color: lot.freeSpots > 0
+                                    color: hasFree
                                         ? AppTheme.success
                                         : AppTheme.danger,
                                     fontWeight: FontWeight.w600,
@@ -107,10 +125,10 @@ class _MapScreenState extends State<MapScreen> {
                             ),
                           ),
                           Icon(Icons.location_on,
-                              color: lot.freeSpots > 0
+                              color: hasFree
                                   ? AppTheme.success
                                   : AppTheme.danger,
-                              size: 24),
+                              size: 26),
                         ],
                       ),
                     ),
@@ -119,37 +137,87 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ],
           ),
-          // Search bar
+          // Search bar + settings
           Positioned(
             top: MediaQuery.of(context).padding.top + 12,
             left: 16,
             right: 16,
-            child: Material(
-              elevation: 4,
-              borderRadius: BorderRadius.circular(12),
-              child: TextField(
-                controller: _searchCtrl,
-                onSubmitted: _onSearch,
-                decoration: InputDecoration(
-                  hintText: 'Поиск парковки...',
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: _searchCtrl.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            _searchCtrl.clear();
-                            _onSearch('');
-                          },
-                        )
-                      : null,
-                  border: OutlineInputBorder(
+            child: Row(
+              children: [
+                Expanded(
+                  child: Material(
+                    elevation: 4,
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
+                    child: TextField(
+                      controller: _searchCtrl,
+                      onSubmitted: _onSearch,
+                      decoration: InputDecoration(
+                        hintText: loc.t('mapSearch'),
+                        prefixIcon: const Icon(Icons.search),
+                        suffixIcon: _searchCtrl.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  _searchCtrl.clear();
+                                  _onSearch('');
+                                },
+                              )
+                            : null,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+                      ),
+                    ),
                   ),
-                  filled: true,
-                  fillColor: Colors.white,
                 ),
-              ),
+                const SizedBox(width: 8),
+                Material(
+                  elevation: 4,
+                  borderRadius: BorderRadius.circular(12),
+                  child: IconButton(
+                    icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+                    onPressed: () => themeProvider.toggle(),
+                    style: IconButton.styleFrom(
+                      backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Material(
+                  elevation: 4,
+                  borderRadius: BorderRadius.circular(12),
+                  child: PopupMenuButton<String>(
+                    icon: Text(
+                      LocaleProvider.labels[loc.lang] ?? 'RU',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: isDark ? Colors.white : AppTheme.gray800,
+                      ),
+                    ),
+                    onSelected: (l) => loc.setLang(l),
+                    color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                    itemBuilder: (_) => LocaleProvider.langs.map((l) {
+                      return PopupMenuItem(
+                        value: l,
+                        child: Row(
+                          children: [
+                            if (l == loc.lang)
+                              const Icon(Icons.check, size: 18, color: AppTheme.primary)
+                            else
+                              const SizedBox(width: 18),
+                            const SizedBox(width: 8),
+                            Text(LocaleProvider.fullLabels[l] ?? l),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
             ),
           ),
           if (provider.loading)

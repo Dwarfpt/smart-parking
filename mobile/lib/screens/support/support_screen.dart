@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../providers/support_provider.dart';
-
+import '../../providers/locale_provider.dart';
 import '../../config/theme.dart';
 
 class SupportScreen extends StatefulWidget {
@@ -25,22 +25,23 @@ class _SupportScreenState extends State<SupportScreen> {
   void _showCreateDialog() {
     final subjectCtrl = TextEditingController();
     final messageCtrl = TextEditingController();
+    final loc = context.read<LocaleProvider>();
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Новое обращение'),
+        title: Text(loc.t('supportNew')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: subjectCtrl,
-              decoration: const InputDecoration(labelText: 'Тема'),
+              decoration: InputDecoration(labelText: loc.t('supportSubject')),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: messageCtrl,
-              decoration: const InputDecoration(labelText: 'Сообщение'),
+              decoration: InputDecoration(labelText: loc.t('supportMessage')),
               maxLines: 3,
             ),
           ],
@@ -48,7 +49,7 @@ class _SupportScreenState extends State<SupportScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Отмена'),
+            child: Text(loc.t('cancel')),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -61,12 +62,12 @@ class _SupportScreenState extends State<SupportScreen> {
                   );
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(ok ? 'Обращение создано' : 'Ошибка'),
+                  content: Text(ok ? loc.t('supportCreated') : loc.t('error')),
                   backgroundColor: ok ? AppTheme.success : AppTheme.danger,
                 ));
               }
             },
-            child: const Text('Создать'),
+            child: Text(loc.t('supportCreate')),
           ),
         ],
       ),
@@ -76,6 +77,7 @@ class _SupportScreenState extends State<SupportScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<SupportProvider>();
+    final loc = context.watch<LocaleProvider>();
     final tickets = provider.tickets;
     final fmt = DateFormat('dd.MM.yy HH:mm');
 
@@ -83,10 +85,10 @@ class _SupportScreenState extends State<SupportScreen> {
       body: provider.loading
           ? const Center(child: CircularProgressIndicator())
           : tickets.isEmpty
-              ? const Center(
-                  child: Text('Нет обращений',
+              ? Center(
+                  child: Text(loc.t('supportEmpty'),
                       style:
-                          TextStyle(fontSize: 16, color: AppTheme.gray500)))
+                          const TextStyle(fontSize: 16, color: AppTheme.gray500)))
               : RefreshIndicator(
                   onRefresh: () => provider.loadMyTickets(),
                   child: ListView.builder(
@@ -116,7 +118,7 @@ class _SupportScreenState extends State<SupportScreen> {
                             style:
                                 const TextStyle(fontSize: 12),
                           ),
-                          trailing: _StatusBadge(status: t.status),
+                          trailing: _StatusBadge(status: t.status, loc: loc),
                         ),
                       );
                     },
@@ -125,7 +127,7 @@ class _SupportScreenState extends State<SupportScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showCreateDialog,
         icon: const Icon(Icons.add),
-        label: const Text('Обращение'),
+        label: Text(loc.t('supportTicket')),
         backgroundColor: AppTheme.primary,
         foregroundColor: Colors.white,
       ),
@@ -135,7 +137,8 @@ class _SupportScreenState extends State<SupportScreen> {
 
 class _StatusBadge extends StatelessWidget {
   final String status;
-  const _StatusBadge({required this.status});
+  final LocaleProvider loc;
+  const _StatusBadge({required this.status, required this.loc});
 
   @override
   Widget build(BuildContext context) {
@@ -144,15 +147,15 @@ class _StatusBadge extends StatelessWidget {
     switch (status) {
       case 'open':
         color = AppTheme.success;
-        label = 'Открыт';
+        label = loc.t('supportOpen');
         break;
       case 'in-progress':
         color = AppTheme.warning;
-        label = 'В работе';
+        label = loc.t('supportInProgress');
         break;
       case 'closed':
         color = AppTheme.gray500;
-        label = 'Закрыт';
+        label = loc.t('supportClosed');
         break;
       default:
         color = AppTheme.gray500;

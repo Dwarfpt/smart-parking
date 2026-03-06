@@ -1,7 +1,7 @@
 // Публичный layout — навбар, футер, для неавторизованных
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Car, Wallet } from 'lucide-react';
+import { Wallet } from 'lucide-react';
 import ThemeToggle from '../ThemeToggle';
 import LanguageSwitcher from '../LanguageSwitcher';
 import { useLanguage } from '../../context/LanguageContext';
@@ -14,7 +14,7 @@ export default function PublicLayout() {
     <div className="main-content">
       <header className="header">
         <Link to="/" className="header-logo">
-          <Car size={24} /> Smart Parking
+          <img src="/public/logo.svg" alt="Smart Parking" style={{ height: 28 }} /> Smart Parking
         </Link>
         <nav className="header-nav">
           <NavLink to="/parkings">{t('navParkings')}</NavLink>

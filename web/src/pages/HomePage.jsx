@@ -9,7 +9,7 @@ export default function HomePage() {
   return (
     <>
       <section className="hero">
-        <h1>🅿️ Smart Parking</h1>
+        <h1><img src="/public/logo.svg" alt="" style={{ height: 48, verticalAlign: 'middle', marginRight: 8 }} />Smart Parking</h1>
         <p>{t('homeSubtitle')}</p>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
           <Link to="/parkings" className="btn btn-primary" style={{ fontSize: '1rem', padding: '14px 28px' }}>

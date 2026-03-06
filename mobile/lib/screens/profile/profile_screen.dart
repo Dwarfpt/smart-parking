@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/locale_provider.dart';
 import '../../services/api_service.dart';
 import '../../models/transaction.dart';
 import '../../config/theme.dart';
@@ -32,18 +33,19 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   @override
   Widget build(BuildContext context) {
+    final loc = context.watch<LocaleProvider>();
     return Column(
       children: [
         TabBar(
           controller: _tabCtrl,
           isScrollable: true,
           labelColor: AppTheme.primary,
-          tabs: const [
-            Tab(text: 'Профиль'),
-            Tab(text: 'Пароль'),
-            Tab(text: 'Безопасность'),
-            Tab(text: 'Баланс'),
-            Tab(text: 'Транзакции'),
+          tabs: [
+            Tab(text: loc.t('profileTab')),
+            Tab(text: loc.t('profilePassword')),
+            Tab(text: loc.t('profileSecurity')),
+            Tab(text: loc.t('profileBalance')),
+            Tab(text: loc.t('profileTransactions')),
           ],
         ),
         Expanded(
@@ -98,6 +100,7 @@ class _ProfileTabState extends State<_ProfileTab> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final loc = context.watch<LocaleProvider>();
     final user = auth.user;
     if (user == null) return const Center(child: CircularProgressIndicator());
 
@@ -119,18 +122,18 @@ class _ProfileTabState extends State<_ProfileTab> {
           const SizedBox(height: 24),
           TextField(
             controller: _nameCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Имя',
-              prefixIcon: Icon(Icons.person_outline),
+            decoration: InputDecoration(
+              labelText: loc.t('profileName'),
+              prefixIcon: const Icon(Icons.person_outline),
             ),
           ),
           const SizedBox(height: 14),
           TextField(
             controller: _phoneCtrl,
             keyboardType: TextInputType.phone,
-            decoration: const InputDecoration(
-              labelText: 'Телефон',
-              prefixIcon: Icon(Icons.phone_outlined),
+            decoration: InputDecoration(
+              labelText: loc.t('profilePhone'),
+              prefixIcon: const Icon(Icons.phone_outlined),
             ),
           ),
           const SizedBox(height: 20),
@@ -145,12 +148,25 @@ class _ProfileTabState extends State<_ProfileTab> {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content:
-                        Text(ok ? 'Профиль обновлён' : auth.error ?? 'Ошибка'),
+                        Text(ok ? loc.t('profileUpdated') : auth.error ?? loc.t('error')),
                     backgroundColor: ok ? AppTheme.success : AppTheme.danger,
                   ));
                 }
               },
-              child: const Text('Сохранить'),
+              child: Text(loc.t('profileSave')),
+            ),
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => auth.logout(),
+              icon: const Icon(Icons.logout),
+              label: Text(loc.t('profileLogout')),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppTheme.danger,
+                side: const BorderSide(color: AppTheme.danger),
+              ),
             ),
           ),
         ],
@@ -179,6 +195,7 @@ class _PasswordTabState extends State<_PasswordTab> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = context.watch<LocaleProvider>();
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -186,18 +203,18 @@ class _PasswordTabState extends State<_PasswordTab> {
           TextField(
             controller: _curCtrl,
             obscureText: true,
-            decoration: const InputDecoration(
-              labelText: 'Текущий пароль',
-              prefixIcon: Icon(Icons.lock_outline),
+            decoration: InputDecoration(
+              labelText: loc.t('profileCurrentPassword'),
+              prefixIcon: const Icon(Icons.lock_outline),
             ),
           ),
           const SizedBox(height: 14),
           TextField(
             controller: _newCtrl,
             obscureText: true,
-            decoration: const InputDecoration(
-              labelText: 'Новый пароль',
-              prefixIcon: Icon(Icons.lock_reset),
+            decoration: InputDecoration(
+              labelText: loc.t('profileNewPassword'),
+              prefixIcon: const Icon(Icons.lock_reset),
             ),
           ),
           const SizedBox(height: 20),
@@ -211,7 +228,7 @@ class _PasswordTabState extends State<_PasswordTab> {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text(
-                        ok ? 'Пароль изменён' : auth.error ?? 'Ошибка'),
+                        ok ? loc.t('profilePasswordChanged') : auth.error ?? loc.t('error')),
                     backgroundColor: ok ? AppTheme.success : AppTheme.danger,
                   ));
                   if (ok) {
@@ -220,7 +237,7 @@ class _PasswordTabState extends State<_PasswordTab> {
                   }
                 }
               },
-              child: const Text('Сменить пароль'),
+              child: Text(loc.t('profileChangePassword')),
             ),
           ),
         ],
@@ -242,6 +259,7 @@ class _SecurityTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final loc = context.watch<LocaleProvider>();
     final user = auth.user;
     if (user == null) return const Center(child: CircularProgressIndicator());
 
@@ -250,21 +268,21 @@ class _SecurityTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Двухфакторная аутентификация',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Text(
+            loc.t('profile2FATitle'),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'При включении 2FA для входа потребуется ввести код, отправленный на ваш email.',
-            style: TextStyle(color: AppTheme.gray500),
+          Text(
+            loc.t('profile2FADesc'),
+            style: const TextStyle(color: AppTheme.gray500),
           ),
           const SizedBox(height: 24),
           Card(
             margin: EdgeInsets.zero,
             child: SwitchListTile(
-              title: const Text('2FA по email'),
-              subtitle: Text(user.twoFactorEnabled ? 'Включена' : 'Выключена'),
+              title: Text(loc.t('profile2FAEmail')),
+              subtitle: Text(user.twoFactorEnabled ? loc.t('profile2FAOn') : loc.t('profile2FAOff')),
               value: user.twoFactorEnabled,
               activeColor: AppTheme.primary,
               onChanged: (_) async {
@@ -272,8 +290,8 @@ class _SecurityTab extends StatelessWidget {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text(ok
-                        ? (user.twoFactorEnabled ? '2FA выключена' : '2FA включена')
-                        : auth.error ?? 'Ошибка'),
+                        ? (user.twoFactorEnabled ? loc.t('profile2FADisabled') : loc.t('profile2FAEnabled'))
+                        : auth.error ?? loc.t('error')),
                     backgroundColor: ok ? AppTheme.success : AppTheme.danger,
                   ));
                 }
@@ -298,6 +316,7 @@ class _BalanceTabState extends State<_BalanceTab> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final loc = context.watch<LocaleProvider>();
     final user = auth.user;
 
     return SingleChildScrollView(
@@ -310,8 +329,8 @@ class _BalanceTabState extends State<_BalanceTab> {
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
-                  const Text('Текущий баланс',
-                      style: TextStyle(fontSize: 14, color: AppTheme.gray500)),
+                  Text(loc.t('profileCurrentBalance'),
+                      style: const TextStyle(fontSize: 14, color: AppTheme.gray500)),
                   const SizedBox(height: 8),
                   Text('${user?.balance.toStringAsFixed(2) ?? '0.00'} MDL',
                       style: const TextStyle(
@@ -326,9 +345,9 @@ class _BalanceTabState extends State<_BalanceTab> {
           TextField(
             controller: _amountCtrl,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'Сумма пополнения',
-              prefixIcon: Icon(Icons.payment),
+            decoration: InputDecoration(
+              labelText: loc.t('profileTopupAmount'),
+              prefixIcon: const Icon(Icons.payment),
               suffixText: 'MDL',
             ),
           ),
@@ -350,7 +369,7 @@ class _BalanceTabState extends State<_BalanceTab> {
                 final amount = double.tryParse(_amountCtrl.text);
                 if (amount == null || amount < 1) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Введите сумму от 1 MDL')),
+                    SnackBar(content: Text(loc.t('profileTopupMin'))),
                   );
                   return;
                 }
@@ -358,15 +377,15 @@ class _BalanceTabState extends State<_BalanceTab> {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text(ok
-                        ? 'Баланс пополнен!'
-                        : auth.error ?? 'Ошибка пополнения'),
+                        ? loc.t('profileTopupSuccess')
+                        : auth.error ?? loc.t('profileTopupError')),
                     backgroundColor: ok ? AppTheme.success : AppTheme.danger,
                   ));
                   if (ok) _amountCtrl.clear();
                 }
               },
               icon: const Icon(Icons.add_circle_outline),
-              label: const Text('Пополнить'),
+              label: Text(loc.t('profileTopup')),
             ),
           ),
         ],
@@ -402,11 +421,12 @@ class _TransactionsTabState extends State<_TransactionsTab> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = context.watch<LocaleProvider>();
     if (_loading) return const Center(child: CircularProgressIndicator());
 
     if (_transactions.isEmpty) {
-      return const Center(
-        child: Text('Нет транзакций', style: TextStyle(color: AppTheme.gray500)),
+      return Center(
+        child: Text(loc.t('profileNoTransactions'), style: const TextStyle(color: AppTheme.gray500)),
       );
     }
 

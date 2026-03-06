@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/locale_provider.dart';
 import '../../config/theme.dart';
 
 class OtpScreen extends StatefulWidget {
@@ -63,11 +64,12 @@ class _OtpScreenState extends State<OtpScreen> {
     final code = _otpCode;
     if (code.length != 6) return;
     final auth = context.read<AuthProvider>();
+    final loc = context.read<LocaleProvider>();
     final ok = await auth.verifyOtp(code);
     if (!ok && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(auth.error ?? 'Неверный код'),
+            content: Text(auth.error ?? loc.t('otpWrongCode')),
             backgroundColor: AppTheme.danger),
       );
       // Clear inputs
@@ -82,8 +84,9 @@ class _OtpScreenState extends State<OtpScreen> {
     final auth = context.read<AuthProvider>();
     final ok = await auth.resendOtp();
     if (ok && mounted) {
+      final loc = context.read<LocaleProvider>();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Новый код отправлен')),
+        SnackBar(content: Text(loc.t('otpSent'))),
       );
       _startTimer();
     }
@@ -92,6 +95,7 @@ class _OtpScreenState extends State<OtpScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final loc = context.watch<LocaleProvider>();
     final email = auth.pendingEmail ?? '';
 
     if (!auth.requiresOtp && !auth.loading) {
@@ -111,12 +115,12 @@ class _OtpScreenState extends State<OtpScreen> {
                 Icon(Icons.shield_outlined,
                     size: 64, color: AppTheme.primary),
                 const SizedBox(height: 16),
-                Text('Подтверждение',
+                Text(loc.t('otpTitle'),
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 Text(
-                  'Мы отправили 6-значный код на\n$email',
+                  '${loc.t('otpSubtitle')}\n$email',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: AppTheme.gray500),
                 ),
@@ -170,17 +174,17 @@ class _OtpScreenState extends State<OtpScreen> {
                             width: 20,
                             child: CircularProgressIndicator(
                                 strokeWidth: 2, color: Colors.white))
-                        : const Text('Подтвердить',
-                            style: TextStyle(fontSize: 16)),
+                        : Text(loc.t('otpSubmit'),
+                            style: const TextStyle(fontSize: 16)),
                   ),
                 ),
                 const SizedBox(height: 16),
                 _resendTimer > 0
-                    ? Text('Отправить повторно через $_resendTimer сек.',
+                    ? Text('${loc.t('otpResendIn')} $_resendTimer ${loc.t('otpSec')}',
                         style: TextStyle(color: AppTheme.gray500))
                     : TextButton(
                         onPressed: _resend,
-                        child: const Text('Отправить код повторно'),
+                        child: Text(loc.t('otpResend')),
                       ),
               ],
             ),

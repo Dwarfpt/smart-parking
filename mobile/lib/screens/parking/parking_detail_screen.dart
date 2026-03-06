@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../providers/parking_provider.dart';
 import '../../providers/booking_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/locale_provider.dart';
 import '../../models/parking_spot.dart';
 import '../../config/theme.dart';
 
@@ -102,8 +103,9 @@ class _ParkingDetailScreenState extends State<ParkingDetailScreen> {
     if (_selectedSpot == null) return;
     final auth = context.read<AuthProvider>();
     if (!auth.isAuthenticated) {
+      final loc = context.read<LocaleProvider>();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Войдите для бронирования')),
+        SnackBar(content: Text(loc.t('parkingLoginRequired'))),
       );
       return;
     }
@@ -127,10 +129,11 @@ class _ParkingDetailScreenState extends State<ParkingDetailScreen> {
     }
 
     if (mounted) {
+      final loc = context.read<LocaleProvider>();
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(ok
-            ? booking.successMessage ?? 'Успешно!'
-            : booking.error ?? 'Ошибка'),
+            ? booking.successMessage ?? loc.t('success')
+            : booking.error ?? loc.t('error')),
         backgroundColor: ok ? AppTheme.success : AppTheme.danger,
       ));
       if (ok) {
@@ -144,6 +147,7 @@ class _ParkingDetailScreenState extends State<ParkingDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final parking = context.watch<ParkingProvider>();
+    final loc = context.watch<LocaleProvider>();
     final lot = parking.currentLot;
     final spots = parking.spots;
     final tariff = parking.currentTariff;
@@ -151,15 +155,15 @@ class _ParkingDetailScreenState extends State<ParkingDetailScreen> {
 
     if (parking.loading && lot == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Загрузка...')),
+        appBar: AppBar(title: Text(loc.t('parkingLoading'))),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (lot == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Парковка')),
-        body: const Center(child: Text('Парковка не найдена')),
+        appBar: AppBar(title: Text(loc.t('parkingTitle'))),
+        body: Center(child: Text(loc.t('parkingNotFound'))),
       );
     }
 
@@ -207,16 +211,16 @@ class _ParkingDetailScreenState extends State<ParkingDetailScreen> {
             // Legend
             Row(
               children: [
-                _legend(AppTheme.success, 'Свободно'),
-                _legend(AppTheme.danger, 'Занято'),
-                _legend(AppTheme.warning, 'Забронировано'),
-                _legend(AppTheme.gray400, 'Ремонт'),
+                _legend(AppTheme.success, loc.t('parkingFree')),
+                _legend(AppTheme.danger, loc.t('parkingOccupied')),
+                _legend(AppTheme.warning, loc.t('parkingReserved')),
+                _legend(AppTheme.gray400, loc.t('parkingMaintenance')),
               ],
             ),
             const SizedBox(height: 12),
 
             // Spots grid
-            Text('Места (${spots.where((s) => s.isFree).length} свободных из ${spots.length})',
+            Text('${loc.t('parkingSpots')} (${spots.where((s) => s.isFree).length} ${loc.t('parkingSpotsCount')} ${spots.length})',
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             GridView.builder(
@@ -266,15 +270,15 @@ class _ParkingDetailScreenState extends State<ParkingDetailScreen> {
             if (_selectedSpot != null) ...[
               const SizedBox(height: 20),
               const Divider(),
-              Text('Бронирование места #${_selectedSpot!.spotNumber}',
+              Text('${loc.t('parkingBookSpot')} #${_selectedSpot!.spotNumber}',
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
 
               // Type toggle
               SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment(value: 'reservation', label: Text('Разовое')),
-                  ButtonSegment(value: 'subscription', label: Text('Подписка')),
+                segments: [
+                  ButtonSegment(value: 'reservation', label: Text(loc.t('parkingOneTime'))),
+                  ButtonSegment(value: 'subscription', label: Text(loc.t('parkingSubscription'))),
                 ],
                 selected: {_bookingType},
                 onSelectionChanged: (s) =>
@@ -284,13 +288,13 @@ class _ParkingDetailScreenState extends State<ParkingDetailScreen> {
 
               if (_bookingType == 'reservation') ...[
                 ListTile(
-                  title: const Text('Начало'),
+                  title: Text(loc.t('parkingStart')),
                   subtitle: Text(fmt.format(_startTime)),
                   trailing: const Icon(Icons.calendar_today),
                   onTap: () => _pickDateTime(true),
                 ),
                 ListTile(
-                  title: const Text('Окончание'),
+                  title: Text(loc.t('parkingEnd')),
                   subtitle: Text(fmt.format(_endTime)),
                   trailing: const Icon(Icons.calendar_today),
                   onTap: () => _pickDateTime(false),
@@ -298,19 +302,19 @@ class _ParkingDetailScreenState extends State<ParkingDetailScreen> {
               ] else ...[
                 DropdownButtonFormField<String>(
                   value: _subPeriod,
-                  decoration: const InputDecoration(labelText: 'Период подписки'),
-                  items: const [
-                    DropdownMenuItem(value: 'week', child: Text('Неделя')),
-                    DropdownMenuItem(value: 'month', child: Text('Месяц')),
-                    DropdownMenuItem(value: '3months', child: Text('3 месяца')),
-                    DropdownMenuItem(value: 'year', child: Text('Год')),
+                  decoration: InputDecoration(labelText: loc.t('parkingSubPeriod')),
+                  items: [
+                    DropdownMenuItem(value: 'week', child: Text(loc.t('parkingWeek'))),
+                    DropdownMenuItem(value: 'month', child: Text(loc.t('parkingMonth'))),
+                    DropdownMenuItem(value: '3months', child: Text(loc.t('parking3Months'))),
+                    DropdownMenuItem(value: 'year', child: Text(loc.t('parkingYear'))),
                   ],
                   onChanged: (v) => setState(() => _subPeriod = v!),
                 ),
                 if (tariff != null) ...[
                   const SizedBox(height: 8),
                   Text(
-                    'Стоимость: ${tariff.getSubscriptionPrice(_subPeriod)} MDL',
+                    '${loc.t('parkingCost')}: ${tariff.getSubscriptionPrice(_subPeriod)} MDL',
                     style: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.w600),
                   ),
@@ -319,9 +323,9 @@ class _ParkingDetailScreenState extends State<ParkingDetailScreen> {
               const SizedBox(height: 12),
               TextField(
                 controller: _plateCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Номер автомобиля (необязательно)',
-                  prefixIcon: Icon(Icons.directions_car_outlined),
+                decoration: InputDecoration(
+                  labelText: loc.t('parkingVehiclePlate'),
+                  prefixIcon: const Icon(Icons.directions_car_outlined),
                 ),
               ),
               const SizedBox(height: 16),
@@ -330,7 +334,7 @@ class _ParkingDetailScreenState extends State<ParkingDetailScreen> {
                 child: ElevatedButton.icon(
                   onPressed: _book,
                   icon: const Icon(Icons.bookmark_add),
-                  label: const Text('Забронировать', style: TextStyle(fontSize: 16)),
+                  label: Text(loc.t('parkingBook'), style: const TextStyle(fontSize: 16)),
                 ),
               ),
             ],

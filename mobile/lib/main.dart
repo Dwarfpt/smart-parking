@@ -6,6 +6,8 @@ import 'providers/auth_provider.dart';
 import 'providers/parking_provider.dart';
 import 'providers/booking_provider.dart';
 import 'providers/support_provider.dart';
+import 'providers/locale_provider.dart';
+import 'providers/theme_provider.dart';
 import 'services/socket_service.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
@@ -31,13 +33,17 @@ class SmartParkingApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ParkingProvider()),
         ChangeNotifierProvider(create: (_) => BookingProvider()),
         ChangeNotifierProvider(create: (_) => SupportProvider()),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
-      child: Consumer<AuthProvider>(
-        builder: (context, auth, _) {
+      child: Consumer2<AuthProvider, ThemeProvider>(
+        builder: (context, auth, themeProvider, _) {
           return MaterialApp(
             title: 'Smart Parking',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeProvider.mode,
             home: auth.loading
                 ? const _SplashScreen()
                 : auth.isAuthenticated

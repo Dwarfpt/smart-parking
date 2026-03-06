@@ -1,7 +1,9 @@
 // Экран регистрации — форма с валидацией
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/locale_provider.dart';
 import '../../config/theme.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -45,9 +47,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
     if (!ok && mounted) {
+      final loc = context.read<LocaleProvider>();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(auth.error ?? 'Ошибка регистрации'),
+            content: Text(auth.error ?? loc.t('authRegError')),
             backgroundColor: AppTheme.danger),
       );
     }
@@ -68,6 +71,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final loc = context.watch<LocaleProvider>();
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -78,40 +82,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.local_parking_rounded,
-                      size: 64, color: AppTheme.primary),
+                  SvgPicture.asset('assets/logo.svg',
+                      width: 64, height: 64),
                   const SizedBox(height: 8),
-                  Text('Регистрация',
+                  Text(loc.t('authRegTitle'),
                       style: Theme.of(context)
                           .textTheme
                           .headlineMedium
-                          ?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.gray800)),
+                          ?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
-                  Text('Создайте новый аккаунт',
+                  Text(loc.t('authCreateAccount'),
                       style: TextStyle(color: AppTheme.gray500)),
                   const SizedBox(height: 24),
                   TextFormField(
                     controller: _nameCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Имя',
-                      prefixIcon: Icon(Icons.person_outline),
+                    decoration: InputDecoration(
+                      labelText: loc.t('authName'),
+                      prefixIcon: const Icon(Icons.person_outline),
                     ),
                     validator: (v) =>
-                        v == null || v.isEmpty ? 'Введите имя' : null,
+                        v == null || v.isEmpty ? loc.t('authEnterName') : null,
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _emailCtrl,
                     keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.email_outlined),
+                    decoration: InputDecoration(
+                      labelText: loc.t('authEmail'),
+                      prefixIcon: const Icon(Icons.email_outlined),
                     ),
                     validator: (v) {
-                      if (v == null || v.isEmpty) return 'Введите email';
-                      if (!v.contains('@')) return 'Некорректный email';
+                      if (v == null || v.isEmpty) return loc.t('authEnterEmail');
+                      if (!v.contains('@')) return loc.t('authInvalidEmail');
                       return null;
                     },
                   ),
@@ -119,9 +121,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   TextFormField(
                     controller: _phoneCtrl,
                     keyboardType: TextInputType.phone,
-                    decoration: const InputDecoration(
-                      labelText: 'Телефон (необязательно)',
-                      prefixIcon: Icon(Icons.phone_outlined),
+                    decoration: InputDecoration(
+                      labelText: loc.t('authPhone'),
+                      prefixIcon: const Icon(Icons.phone_outlined),
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -129,7 +131,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     controller: _passwordCtrl,
                     obscureText: _obscure,
                     decoration: InputDecoration(
-                      labelText: 'Пароль',
+                      labelText: loc.t('authPassword'),
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
                         icon: Icon(
@@ -138,8 +140,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     validator: (v) {
-                      if (v == null || v.isEmpty) return 'Введите пароль';
-                      if (v.length < 6) return 'Минимум 6 символов';
+                      if (v == null || v.isEmpty) return loc.t('authEnterPassword');
+                      if (v.length < 6) return loc.t('authMinChars');
                       return null;
                     },
                   ),
@@ -147,12 +149,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   TextFormField(
                     controller: _confirmCtrl,
                     obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Подтвердите пароль',
-                      prefixIcon: Icon(Icons.lock_outline),
+                    decoration: InputDecoration(
+                      labelText: loc.t('authConfirmPassword'),
+                      prefixIcon: const Icon(Icons.lock_outline),
                     ),
                     validator: (v) {
-                      if (v != _passwordCtrl.text) return 'Пароли не совпадают';
+                      if (v != _passwordCtrl.text) return loc.t('authPasswordsMismatch');
                       return null;
                     },
                   ),
@@ -167,8 +169,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               width: 20,
                               child: CircularProgressIndicator(
                                   strokeWidth: 2, color: Colors.white))
-                          : const Text('Зарегистрироваться',
-                              style: TextStyle(fontSize: 16)),
+                          : Text(loc.t('authRegBtn'),
+                              style: const TextStyle(fontSize: 16)),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -177,7 +179,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const Expanded(child: Divider()),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: Text('или', style: TextStyle(color: AppTheme.gray500, fontSize: 13)),
+                        child: Text(loc.t('or'), style: TextStyle(color: AppTheme.gray500, fontSize: 13)),
                       ),
                       const Expanded(child: Divider()),
                     ],
@@ -188,7 +190,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: OutlinedButton.icon(
                       onPressed: auth.loading ? null : _signInWithGoogle,
                       icon: const Icon(Icons.g_mobiledata, size: 24),
-                      label: const Text('Регистрация через Google'),
+                      label: Text(loc.t('authRegGoogle')),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
@@ -198,7 +200,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   TextButton(
                     onPressed: () =>
                         Navigator.pushReplacementNamed(context, '/login'),
-                    child: const Text('Уже есть аккаунт? Войти'),
+                    child: Text(loc.t('authHaveAccount')),
                   ),
                 ],
               ),
