@@ -16,7 +16,7 @@ router.get('/validate/:qrToken', async (req, res) => {
   try {
     const booking = await Booking.findOne({ qrToken: req.params.qrToken })
       .populate('parkingSpotId', 'spotNumber zone floor')
-      .populate('parkingLotId', 'name address')
+      .populate('parkingLotId', 'name nameRo nameEn address addressRo addressEn')
       .populate('userId', 'name email');
 
     if (!booking) {
@@ -351,7 +351,7 @@ router.get('/my', async (req, res) => {
 
     const bookings = await Booking.find(filter)
       .populate('parkingSpotId', 'spotNumber zone floor')
-      .populate('parkingLotId', 'name address')
+      .populate('parkingLotId', 'name nameRo nameEn address addressRo addressEn')
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
@@ -381,7 +381,7 @@ router.get('/:id', async (req, res) => {
       userId: req.user._id,
     })
       .populate('parkingSpotId', 'spotNumber zone floor')
-      .populate('parkingLotId', 'name address');
+      .populate('parkingLotId', 'name nameRo nameEn address addressRo addressEn');
 
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found.' });

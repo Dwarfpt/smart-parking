@@ -15,7 +15,11 @@ router.get('/', async (req, res) => {
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: 'i' } },
+        { nameRo: { $regex: search, $options: 'i' } },
+        { nameEn: { $regex: search, $options: 'i' } },
         { address: { $regex: search, $options: 'i' } },
+        { addressRo: { $regex: search, $options: 'i' } },
+        { addressEn: { $regex: search, $options: 'i' } },
       ];
     }
 

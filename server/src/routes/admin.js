@@ -164,7 +164,7 @@ router.get('/users/:id', async (req, res) => {
 
     // История бронирований
     const bookings = await Booking.find({ userId: req.params.id })
-      .populate('parkingLotId', 'name')
+      .populate('parkingLotId', 'name nameRo nameEn')
       .sort({ createdAt: -1 })
       .limit(10);
 
@@ -398,7 +398,7 @@ router.delete('/parking/:id', async (req, res) => {
 router.get('/devices', async (req, res) => {
   try {
     const devices = await IoTDevice.find()
-      .populate('parkingLotId', 'name address')
+      .populate('parkingLotId', 'name nameRo nameEn address addressRo addressEn')
       .sort({ lastHeartbeat: -1 });
 
     res.json({ devices });
@@ -419,7 +419,7 @@ router.get('/bookings', async (req, res) => {
     const bookings = await Booking.find(filter)
       .populate('userId', 'name email')
       .populate('parkingSpotId', 'spotNumber zone')
-      .populate('parkingLotId', 'name')
+      .populate('parkingLotId', 'name nameRo nameEn')
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
