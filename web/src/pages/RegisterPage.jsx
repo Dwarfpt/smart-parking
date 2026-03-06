@@ -57,7 +57,7 @@ export default function RegisterPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1 className="auth-title"><img src="/public/logo.svg" alt="" style={{ height: 40, verticalAlign: 'middle', marginRight: 8 }} />Smart Parking</h1>
+        <h1 className="auth-title"><img src="/logo.svg" alt="" style={{ height: 40, verticalAlign: 'middle', marginRight: 8 }} />Smart Parking</h1>
         <p className="auth-subtitle">{t('authCreateAccount')}</p>
 
         {error && <div className="alert alert-error">{error}</div>}

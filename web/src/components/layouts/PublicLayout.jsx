@@ -14,7 +14,7 @@ export default function PublicLayout() {
     <div className="main-content">
       <header className="header">
         <Link to="/" className="header-logo">
-          <img src="/public/logo.svg" alt="Smart Parking" style={{ height: 28 }} /> Smart Parking
+          <img src="/logo.svg" alt="Smart Parking" style={{ height: 28 }} /> Smart Parking
         </Link>
         <nav className="header-nav">
           <NavLink to="/parkings">{t('navParkings')}</NavLink>

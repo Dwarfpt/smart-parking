@@ -20,7 +20,7 @@ export default function AdminLayout() {
   return (
     <div className="app-layout">
       <aside className="sidebar">
-        <div className="sidebar-logo"><img src="/public/logo.svg" alt="" style={{ height: 24, verticalAlign: 'middle', marginRight: 6 }} />{t('adminPanel')}</div>
+        <div className="sidebar-logo"><img src="/logo.svg" alt="" style={{ height: 24, verticalAlign: 'middle', marginRight: 6 }} />{t('adminPanel')}</div>
         <nav className="sidebar-nav">
           <NavLink to="/admin" end>
             <LayoutDashboard size={18} /> {t('adminDashboard')}
