@@ -104,16 +104,19 @@ class BookingLotInfo {
   final String id;
   final String name;
   final String address;
+  final Map<String, dynamic> raw;
 
   BookingLotInfo({
     required this.id,
     required this.name,
     this.address = '',
+    this.raw = const {},
   });
 
   factory BookingLotInfo.fromJson(Map<String, dynamic> json) => BookingLotInfo(
         id: json['_id'] ?? '',
         name: json['name'] ?? '',
         address: json['address'] ?? '',
+        raw: json,
       );
 }

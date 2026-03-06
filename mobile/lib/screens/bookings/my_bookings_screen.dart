@@ -170,7 +170,7 @@ class _BookingCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             if (booking.lotInfo != null)
-              Text(booking.lotInfo!.name,
+              Text(loc.loc(booking.lotInfo!.raw, 'name'),
                   style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
             if (booking.spotInfo != null)
               Text(

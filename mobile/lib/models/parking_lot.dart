@@ -2,7 +2,11 @@
 class ParkingLot {
   final String id;
   final String name;
+  final String nameRo;
+  final String nameEn;
   final String address;
+  final String addressRo;
+  final String addressEn;
   final String description;
   final double longitude;
   final double latitude;
@@ -14,11 +18,17 @@ class ParkingLot {
   final int freeSpots;
   final Map<String, int> spotCounts;
   final ParkingLotTariffSummary? tariff;
+  /// Raw JSON for localization via loc()
+  final Map<String, dynamic> raw;
 
   ParkingLot({
     required this.id,
     required this.name,
+    this.nameRo = '',
+    this.nameEn = '',
     required this.address,
+    this.addressRo = '',
+    this.addressEn = '',
     this.description = '',
     required this.longitude,
     required this.latitude,
@@ -30,6 +40,7 @@ class ParkingLot {
     this.freeSpots = 0,
     this.spotCounts = const {},
     this.tariff,
+    this.raw = const {},
   });
 
   factory ParkingLot.fromJson(Map<String, dynamic> json) {
@@ -41,7 +52,11 @@ class ParkingLot {
     return ParkingLot(
       id: json['_id'] ?? json['id'] ?? '',
       name: json['name'] ?? '',
+      nameRo: json['nameRo'] ?? '',
+      nameEn: json['nameEn'] ?? '',
       address: json['address'] ?? '',
+      addressRo: json['addressRo'] ?? '',
+      addressEn: json['addressEn'] ?? '',
       description: json['description'] ?? '',
       longitude: (coords[0] as num).toDouble(),
       latitude: (coords[1] as num).toDouble(),
@@ -55,6 +70,7 @@ class ParkingLot {
       tariff: json['tariff'] != null
           ? ParkingLotTariffSummary.fromJson(json['tariff'])
           : null,
+      raw: json,
     );
   }
 }

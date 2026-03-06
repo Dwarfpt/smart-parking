@@ -104,7 +104,7 @@ class _MapScreenState extends State<MapScreen> {
                             ),
                             child: Column(
                               children: [
-                                Text(lot.name,
+                                Text(loc.loc(lot.raw, 'name'),
                                     style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
@@ -177,18 +177,20 @@ class _MapScreenState extends State<MapScreen> {
                 Material(
                   elevation: 4,
                   borderRadius: BorderRadius.circular(12),
+                  color: isDark ? const Color(0xFF1F2937) : Colors.white,
                   child: IconButton(
-                    icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
-                    onPressed: () => themeProvider.toggle(),
-                    style: IconButton.styleFrom(
-                      backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+                    icon: Icon(
+                      isDark ? Icons.light_mode : Icons.dark_mode,
+                      color: isDark ? Colors.amber : AppTheme.gray800,
                     ),
+                    onPressed: () => themeProvider.toggle(),
                   ),
                 ),
                 const SizedBox(width: 4),
                 Material(
                   elevation: 4,
                   borderRadius: BorderRadius.circular(12),
+                  color: isDark ? const Color(0xFF1F2937) : Colors.white,
                   child: PopupMenuButton<String>(
                     icon: Text(
                       LocaleProvider.labels[loc.lang] ?? 'RU',

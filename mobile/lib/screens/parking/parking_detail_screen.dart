@@ -168,7 +168,7 @@ class _ParkingDetailScreenState extends State<ParkingDetailScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(lot.name)),
+      appBar: AppBar(title: Text(loc.loc(lot.raw, 'name'))),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -185,7 +185,7 @@ class _ParkingDetailScreenState extends State<ParkingDetailScreen> {
                     Row(children: [
                       const Icon(Icons.location_on, size: 18, color: AppTheme.primary),
                       const SizedBox(width: 6),
-                      Expanded(child: Text(lot.address,
+                      Expanded(child: Text(loc.loc(lot.raw, 'address'),
                           style: const TextStyle(fontSize: 14))),
                     ]),
                     const SizedBox(height: 8),
