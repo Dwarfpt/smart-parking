@@ -101,6 +101,7 @@ export default function RegisterPage() {
               type="password"
               className="form-control"
               placeholder={t('authMinChars')}
+              autoComplete="new-password"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               required

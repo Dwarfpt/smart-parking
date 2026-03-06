@@ -151,6 +151,7 @@ export default function ProfilePage() {
               <div style={{ position: 'relative' }}>
                 <input
                   type={showPass ? 'text' : 'password'}
+                  autoComplete="current-password"
                   value={passForm.currentPassword}
                   onChange={e => setPassForm({ ...passForm, currentPassword: e.target.value })}
                   required
@@ -168,6 +169,7 @@ export default function ProfilePage() {
               <label>{t('newPassword')}</label>
               <input
                 type="password"
+                autoComplete="new-password"
                 value={passForm.newPassword}
                 onChange={e => setPassForm({ ...passForm, newPassword: e.target.value })}
                 required

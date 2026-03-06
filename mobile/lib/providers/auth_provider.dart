@@ -1,4 +1,5 @@
 // Провайдер авторизации — вход, регистрация, OTP, Google OAuth
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -7,9 +8,11 @@ import '../services/api_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   final ApiService _api = ApiService();
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: ['email', 'profile'],
-  );
+
+  // Ленивая инициализация — на Web без client_id GoogleSignIn крэшится
+  GoogleSignIn? _googleSignIn;
+  GoogleSignIn get googleSignIn =>
+      _googleSignIn ??= GoogleSignIn(scopes: ['email', 'profile']);
 
   User? _user;
   bool _loading = true;
@@ -132,7 +135,7 @@ class AuthProvider extends ChangeNotifier {
     _loading = true;
     notifyListeners();
     try {
-      final account = await _googleSignIn.signIn();
+      final account = await googleSignIn.signIn();
       if (account == null) {
         _loading = false;
         notifyListeners();
@@ -171,7 +174,7 @@ class AuthProvider extends ChangeNotifier {
     _pendingTempToken = null;
     _pendingEmail = null;
     try {
-      await _googleSignIn.signOut();
+      await googleSignIn.signOut();
     } catch (_) {}
     notifyListeners();
   }
