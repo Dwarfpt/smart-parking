@@ -174,31 +174,24 @@ class _MapScreenState extends State<MapScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                Material(
+                  elevation: 4,
+                  borderRadius: BorderRadius.circular(12),
+                  color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                  child: InkWell(
                     borderRadius: BorderRadius.circular(12),
-                    border: isDark
-                        ? null
-                        : Border.all(color: AppTheme.gray400, width: 0.5),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.15),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
+                    onTap: () => themeProvider.toggle(),
+                    child: SizedBox(
+                      width: 48,
+                      height: 48,
+                      child: Center(
+                        child: Icon(
+                          isDark ? Icons.light_mode : Icons.dark_mode,
+                          color: isDark ? Colors.amber : Colors.blueGrey[800],
+                          size: 24,
+                        ),
                       ),
-                    ],
-                  ),
-                  child: IconButton(
-                    icon: Icon(
-                      isDark ? Icons.light_mode : Icons.dark_mode,
-                      size: 24,
                     ),
-                    style: IconButton.styleFrom(
-                      foregroundColor:
-                          isDark ? Colors.amber : AppTheme.gray800,
-                    ),
-                    onPressed: () => themeProvider.toggle(),
                   ),
                 ),
                 const SizedBox(width: 4),
