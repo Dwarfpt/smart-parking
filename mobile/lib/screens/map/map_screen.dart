@@ -174,22 +174,26 @@ class _MapScreenState extends State<MapScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Material(
-                  elevation: 4,
-                  borderRadius: BorderRadius.circular(12),
-                  color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () => themeProvider.toggle(),
-                    child: SizedBox(
-                      width: 48,
-                      height: 48,
-                      child: Center(
-                        child: Icon(
-                          isDark ? Icons.light_mode : Icons.dark_mode,
-                          color: isDark ? Colors.amber : Colors.blueGrey[800],
-                          size: 24,
+                GestureDetector(
+                  onTap: () => themeProvider.toggle(),
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.25),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
                         ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        isDark ? '☀️' : '🌙',
+                        style: const TextStyle(fontSize: 22),
                       ),
                     ),
                   ),
