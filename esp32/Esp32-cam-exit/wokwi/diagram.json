@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "author": "Smart Parking",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-s3-devkitc-1",
+      "id": "esp32cam_exit",
+      "top": 0,
+      "left": 0,
+      "attrs": { "label": "ESP32-CAM (Выезд)" }
+    }
+  ],
+  "connections": [],
+  "serialMonitor": { "display": "auto" }
+}

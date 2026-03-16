@@ -45,6 +45,8 @@ services:
       dockerfile: Dockerfile
     container_name: sp-server
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "5000:5000"
     environment:
@@ -63,6 +65,9 @@ services:
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
       - GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL:-http://localhost:5000/api/auth/google/callback}
+      - CAMERA_URL=${CAMERA_URL:-http://192.168.100.48}
+      - CAMERA_EXIT_URL=${CAMERA_EXIT_URL:-http://192.168.100.49}
+      - PLATE_RECOGNIZER_TOKEN=${PLATE_RECOGNIZER_TOKEN:-}
     depends_on:
       mongo:
         condition: service_healthy

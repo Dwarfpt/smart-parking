@@ -49,6 +49,7 @@ class ParkingProvider extends ChangeNotifier {
       _currentTariff = data['tariff'] as Tariff?;
 
       // Subscribe to real-time updates
+      _socket.subscribeToParking(id);
       _socket.off('spots:update');
       _socket.on('spots:update', (data) {
         if (data['parkingLotId'] == id) {
@@ -85,6 +86,9 @@ class ParkingProvider extends ChangeNotifier {
 
   void clearDetail() {
     _socket.off('spots:update');
+    if (_currentLot != null) {
+      _socket.unsubscribeFromParking(_currentLot!.id);
+    }
     _currentLot = null;
     _spots = [];
     _currentTariff = null;

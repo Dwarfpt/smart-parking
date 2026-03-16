@@ -100,6 +100,16 @@ router.post(
         return res.status(404).json({ message: 'Parking spot not found.' });
       }
 
+      // Блокировка: место физически занято (ИК-датчик обнаружил машину)
+      if (spot.status === 'occupied') {
+        return res.status(400).json({ message: 'This spot is physically occupied.' });
+      }
+
+      // Блокировка: место на обслуживании
+      if (spot.status === 'maintenance') {
+        return res.status(400).json({ message: 'This spot is under maintenance.' });
+      }
+
       // Проверка на подписку
       if (spot.isSubscription && spot.subscribedUserId?.toString() !== req.user._id.toString()) {
         return res.status(400).json({ message: 'This spot is reserved for a subscriber.' });
@@ -181,14 +191,16 @@ router.post(
         balanceAfter: user.balance,
       });
 
-      // WebSocket broadcast
+      // WebSocket — уведомляем подписчиков парковки
       const io = req.app.get('io');
       if (io) {
-        io.emit('spots:update', {
+        const spotPayload = {
           parkingLotId: spot.parkingLotId,
           spots: [{ _id: spot._id, spotNumber: spot.spotNumber, status: 'reserved' }],
-        });
-        io.emit('booking:confirmed', { booking });
+        };
+        io.to(`parking:${spot.parkingLotId}`).emit('spots:update', spotPayload);
+        io.to('admin').emit('spots:update', spotPayload);
+        io.to(`user:${req.user._id}`).emit('booking:confirmed', { booking });
       }
 
       res.status(201).json({
@@ -219,6 +231,16 @@ router.post(
       const spot = await ParkingSpot.findById(parkingSpotId);
       if (!spot) {
         return res.status(404).json({ message: 'Parking spot not found.' });
+      }
+
+      // Блокировка: место физически занято (ИК-датчик обнаружил машину)
+      if (spot.status === 'occupied') {
+        return res.status(400).json({ message: 'This spot is physically occupied.' });
+      }
+
+      // Блокировка: место на обслуживании
+      if (spot.status === 'maintenance') {
+        return res.status(400).json({ message: 'This spot is under maintenance.' });
       }
 
       // Проверка что место не занято подпиской
@@ -319,13 +341,15 @@ router.post(
         balanceAfter: user.balance,
       });
 
-      // WebSocket
+      // WebSocket — уведомляем подписчиков парковки
       const io = req.app.get('io');
       if (io) {
-        io.emit('spots:update', {
+        const spotPayload = {
           parkingLotId: spot.parkingLotId,
           spots: [{ _id: spot._id, spotNumber: spot.spotNumber, status: 'reserved' }],
-        });
+        };
+        io.to(`parking:${spot.parkingLotId}`).emit('spots:update', spotPayload);
+        io.to('admin').emit('spots:update', spotPayload);
       }
 
       res.status(201).json({
@@ -444,14 +468,16 @@ router.put('/:id/cancel', async (req, res) => {
       }
       await spot.save();
 
-      // WebSocket
+      // WebSocket — уведомляем подписчиков парковки
       const io = req.app.get('io');
       if (io) {
-        io.emit('spots:update', {
+        const spotPayload = {
           parkingLotId: spot.parkingLotId,
           spots: [{ _id: spot._id, spotNumber: spot.spotNumber, status: 'free' }],
-        });
-        io.emit('booking:cancelled', { bookingId: booking._id });
+        };
+        io.to(`parking:${spot.parkingLotId}`).emit('spots:update', spotPayload);
+        io.to('admin').emit('spots:update', spotPayload);
+        io.to(`user:${req.user._id}`).emit('booking:cancelled', { bookingId: booking._id });
       }
     }
 

@@ -50,7 +50,13 @@ export default function ParkingDetailPage() {
     subscribeToParking(id);
     const socket = getSocket();
     const handler = (data) => {
-      if (data.spots) setSpots(data.spots);
+      // Мержим обновлённые места в существующий массив (не заменяем целиком)
+      if (data.spots) {
+        setSpots(prev => prev.map(spot => {
+          const updated = data.spots.find(u => u._id === spot._id || u.spotNumber === spot.spotNumber);
+          return updated ? { ...spot, ...updated } : spot;
+        }));
+      }
     };
     socket?.on('spots:update', handler);
     return () => {

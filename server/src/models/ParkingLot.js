@@ -21,6 +21,7 @@ const parkingLotSchema = new mongoose.Schema(
       close: { type: String, default: '23:59' },
     },
     isActive: { type: Boolean, default: true },
+    mqttId:   { type: String, unique: true, sparse: true }, // ID для MQTT-топиков (например 'lot1')
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );

@@ -19,3 +19,7 @@ web/.env
 
 # Логи
 *.log
+
+# PlatformIO build artifacts
+esp32/**/.pio/
+esp32/**/build/

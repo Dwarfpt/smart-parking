@@ -1,4 +1,5 @@
 // Планировщик — автоматическое завершение просроченных бронирований
+// Каждые 60 сек проверяет active бронирования с истёкшим endTime
 const Booking = require('../models/Booking');
 const ParkingSpot = require('../models/ParkingSpot');
 
@@ -21,12 +22,14 @@ const checkExpiredBookings = async (io) => {
         spot.status = 'free';
         await spot.save();
 
-        // Уведомляем клиентов через WebSocket
+        // Уведомляем клиентов через WebSocket (по комнате парковки)
         if (io) {
-          io.emit('spots:update', {
+          const payload = {
             parkingLotId: spot.parkingLotId,
             spots: [{ _id: spot._id, spotNumber: spot.spotNumber, status: 'free' }],
-          });
+          };
+          io.to(`parking:${spot.parkingLotId}`).emit('spots:update', payload);
+          io.to('admin').emit('spots:update', payload);
         }
       }
     }

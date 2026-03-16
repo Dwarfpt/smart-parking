@@ -1,6 +1,15 @@
-// MQTT-сервис — связь с ESP32: датчики мест, шлагбаум, дисплей, LED
+// ============================================================
+//  MQTT-сервис — связь с ESP32 устройствами
+//  Обработка: ИК-датчики мест, шлагбаум, heartbeat
+//  Топики:
+//    parking/+/spots/status  — статус парковочных мест от датчиков
+//    parking/+/heartbeat     — пульс устройств (онлайн/оффлайн)
+//    parking/+/barrier/status — статус шлагбаума
+//    parking/+/barrier/cmd    — команды шлагбауму (open/close)
+// ============================================================
 const mqtt = require('mqtt');
 const config = require('../config');
+const ParkingLot = require('../models/ParkingLot');
 const ParkingSpot = require('../models/ParkingSpot');
 const IoTDevice = require('../models/IoTDevice');
 
@@ -8,6 +17,41 @@ let mqttClient = null;
 let ioInstance = null;
 
 // ——————————— Подключение ———————————
+
+// Кэш mqttId → ObjectId (чтобы не искать в БД каждый раз)
+const lotIdCache = new Map();
+
+async function resolveLotId(identifier) {
+  // 1. Кэш
+  if (lotIdCache.has(identifier)) {
+    console.log(`[RESOLVE] '${identifier}' → кэш: ${lotIdCache.get(identifier)}`);
+    return lotIdCache.get(identifier);
+  }
+
+  // 2. Может быть это уже ObjectId
+  if (/^[0-9a-f]{24}$/.test(identifier)) {
+    lotIdCache.set(identifier, identifier);
+    return identifier;
+  }
+
+  // 3. Ищем IoT-устройство по deviceId (parkingLotId — ObjectId, нельзя искать по строке)
+  const device = await IoTDevice.findOne({ deviceId: identifier });
+  if (device) {
+    console.log(`[RESOLVE] '${identifier}' → IoTDevice: ${device.parkingLotId}`);
+    lotIdCache.set(identifier, device.parkingLotId);
+    return device.parkingLotId;
+  }
+
+  // 4. Ищем парковку по mqttId
+  const lot = await ParkingLot.findOne({ mqttId: identifier });
+  if (lot) {
+    console.log(`[RESOLVE] '${identifier}' → ParkingLot.mqttId: ${lot._id}`);
+    lotIdCache.set(identifier, lot._id);
+    return lot._id;
+  }
+
+  return null;
+}
 
 const initMqtt = (io) => {
   ioInstance = io;
@@ -43,7 +87,9 @@ const initMqtt = (io) => {
 
   mqttClient.on('message', async (topic, message) => {
     try {
-      const payload = JSON.parse(message.toString());
+      const raw = message.toString();
+      console.log(`[MQTT] << ${topic}: ${raw.substring(0, 200)}`);
+      const payload = JSON.parse(raw);
       const parts = topic.split('/');
       const id = parts[1], type = parts[2], sub = parts[3];
 
@@ -63,17 +109,27 @@ const initMqtt = (io) => {
 // Обновление статусов мест от ESP32
 // Payload: { spots: [{ spotNumber: 1, occupied: true }, ...] }
 const handleSpotsUpdate = async (identifier, payload) => {
-  if (!Array.isArray(payload.spots)) return;
+  console.log(`[MQTT-SPOTS] Обработка: identifier=${identifier}, spots=${JSON.stringify(payload.spots?.length)}`);
+  if (!Array.isArray(payload.spots)) {
+    console.warn(`[MQTT-SPOTS] payload.spots не массив!`);
+    return;
+  }
 
-  const device = await IoTDevice.findOne({
-    $or: [{ deviceId: identifier }, { parkingLotId: identifier }],
-  });
-  const parkingLotId = device ? device.parkingLotId : identifier;
+  // Разрешаем MQTT-идентификатор (например 'lot1') → реальный parkingLotId
+  const parkingLotId = await resolveLotId(identifier);
+  console.log(`[MQTT-SPOTS] resolveLotId('${identifier}') → ${parkingLotId}`);
+  if (!parkingLotId) {
+    console.warn(`[MQTT] Неизвестный lotId: ${identifier}`);
+    return;
+  }
   const updated = [];
 
   for (const { spotNumber, occupied } of payload.spots) {
     const spot = await ParkingSpot.findOne({ parkingLotId, spotNumber });
-    if (!spot) continue;
+    if (!spot) {
+      console.warn(`[MQTT-SPOTS] Место ${spotNumber} не найдено для parkingLotId=${parkingLotId}`);
+      continue;
+    }
 
     const sensorStatus = occupied ? 'occupied' : 'free';
 
@@ -85,21 +141,37 @@ const handleSpotsUpdate = async (identifier, payload) => {
       spot.status = sensorStatus;
       await spot.save();
       updated.push({ _id: spot._id, spotNumber: spot.spotNumber, status: sensorStatus });
+      console.log(`[MQTT-SPOTS] Место ${spotNumber}: ${spot.status} → ${sensorStatus}`);
     }
   }
 
-  // WebSocket-уведомление об изменениях
+  // WebSocket-уведомление об изменениях (всем подписчикам парковки)
   if (updated.length && ioInstance) {
-    ioInstance.emit('spots:update', { parkingLotId, spots: updated });
+    const wsPayload = { parkingLotId: parkingLotId.toString(), spots: updated };
+    console.log(`[MQTT-SPOTS] WS emit parking:${parkingLotId} → ${updated.length} мест`);
+    ioInstance.to(`parking:${parkingLotId}`).emit('spots:update', wsPayload);
+    ioInstance.to('admin').emit('spots:update', wsPayload);
+  } else {
+    console.log(`[MQTT-SPOTS] Нет изменений (updated=${updated.length}, io=${!!ioInstance})`);
   }
 };
 
 // Heartbeat от ESP32 — обновляем статус устройства
 const handleHeartbeat = async (identifier, payload) => {
-  await IoTDevice.findOneAndUpdate(
+  const result = await IoTDevice.findOneAndUpdate(
     { $or: [{ deviceId: identifier }, { deviceId: payload.deviceId }] },
     { lastHeartbeat: new Date(), status: 'online', ipAddress: payload.ip || '' }
   );
+  // Если не нашли по deviceId — ищем через mqttId парковки
+  if (!result && payload.deviceId) {
+    const lot = await ParkingLot.findOne({ mqttId: identifier });
+    if (lot) {
+      await IoTDevice.findOneAndUpdate(
+        { parkingLotId: lot._id },
+        { lastHeartbeat: new Date(), status: 'online', ipAddress: payload.ip || '', deviceId: payload.deviceId }
+      );
+    }
+  }
 };
 
 // Статус шлагбаума → WebSocket
@@ -111,14 +183,29 @@ const handleBarrierStatus = (identifier, payload) => {
 
 // Вспомогательная отправка MQTT-сообщения
 const publish = (topic, data, qos = 1) => {
-  if (mqttClient?.connected) mqttClient.publish(topic, JSON.stringify(data), { qos });
+  if (!mqttClient) {
+    console.warn(`[MQTT] ⚠️  publish failed (no client): ${topic}`);
+    return;
+  }
+  if (!mqttClient.connected) {
+    console.warn(`[MQTT] ⚠️  publish failed (disconnected): ${topic}`);
+    return;
+  }
+  mqttClient.publish(topic, JSON.stringify(data), { qos });
+  console.log(`[MQTT] >> ${topic} ${JSON.stringify(data)}`);
 };
 
-// Открыть шлагбаум
-const openBarrier = (lotId) => publish(`parking/${lotId}/barrier/cmd`, { action: 'open' });
+// Открыть шлагбаум (lotId может быть ObjectId или mqttId)
+const openBarrier = async (lotId) => {
+  const mqttId = await resolveToMqttId(lotId);
+  publish(`parking/${mqttId}/barrier/cmd`, { action: 'open' });
+};
 
 // Закрыть шлагбаум
-const closeBarrier = (lotId) => publish(`parking/${lotId}/barrier/cmd`, { action: 'close' });
+const closeBarrier = async (lotId) => {
+  const mqttId = await resolveToMqttId(lotId);
+  publish(`parking/${mqttId}/barrier/cmd`, { action: 'close' });
+};
 
 // Обновить дисплей
 const updateDisplay = (lotId, data) => publish(`parking/${lotId}/display/update`, data, 0);
@@ -126,6 +213,15 @@ const updateDisplay = (lotId, data) => publish(`parking/${lotId}/display/update`
 // Обновить LED на месте
 const updateSpotLed = (lotId, spotNumber, color) =>
   publish(`parking/${lotId}/led/cmd`, { spotNumber, color }, 0);
+
+// Резолв ObjectId → mqttId для публикации в MQTT-топик
+async function resolveToMqttId(lotId) {
+  // Если уже строка-slug (не ObjectId) — используем как есть
+  if (typeof lotId === 'string' && !/^[0-9a-f]{24}$/.test(lotId)) return lotId;
+  // Ищем парковку по ObjectId и возвращаем mqttId
+  const lot = await ParkingLot.findById(lotId).select('mqttId').lean();
+  return lot?.mqttId || lotId.toString();
+}
 
 const getMqttClient = () => mqttClient;
 

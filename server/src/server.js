@@ -1,4 +1,13 @@
-// Точка входа — запуск HTTP-сервера, WebSocket, MQTT, планировщик
+// ============================================================
+//  Smart Parking — Точка входа сервера
+//  Порядок инициализации:
+//    1. MongoDB       — база данных
+//    2. HTTP          — Express API-сервер
+//    3. WebSocket     — Socket.io (реал-тайм обновления)
+//    4. MQTT          — связь с ESP32 устройствами
+//    5. Планировщик   — автозавершение просроченных бронирований
+//    6. Сканер камер  — QR-сканирование с ESP32-CAM
+// ============================================================
 const http = require('http');
 const app = require('./app');
 const config = require('./config');
@@ -6,6 +15,7 @@ const connectDB = require('./config/db');
 const { initWebSocket } = require('./services/wsService');
 const { initMqtt } = require('./services/mqttService');
 const { startBookingScheduler } = require('./services/bookingScheduler');
+const { startCameraScanner } = require('./services/cameraScannerService');
 
 const startServer = async () => {
   await connectDB();                           // 1. MongoDB
@@ -18,6 +28,7 @@ const startServer = async () => {
   }
 
   startBookingScheduler(io);                   // 5. Планировщик
+  startCameraScanner();                        // 6. QR-сканер камер
 
   server.listen(config.port, () => {           // 6. Запуск
     console.log(`\n  Smart Parking | ${config.nodeEnv} | :${config.port}`);

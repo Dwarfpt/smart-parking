@@ -42,6 +42,16 @@ class SocketService {
     _socket?.emit(event, data);
   }
 
+  // Подписка на обновления конкретной парковки (Socket.io room)
+  void subscribeToParking(String parkingId) {
+    _socket?.emit('subscribe:parking', parkingId);
+  }
+
+  // Отписка от обновлений парковки
+  void unsubscribeFromParking(String parkingId) {
+    _socket?.emit('unsubscribe:parking', parkingId);
+  }
+
   void disconnect() {
     _socket?.disconnect();
     _socket?.dispose();
