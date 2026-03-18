@@ -39,15 +39,26 @@
 <body>
   <script>
     // GIS wrapper — вызывается из Dart через js interop
+    var _gisInitialized = false;
+    var _gisResolve = null;
+
     function triggerGoogleSignIn(clientId) {
       return new Promise(function(resolve) {
-        google.accounts.id.initialize({
-          client_id: clientId,
-          callback: function(response) {
-            resolve(response.credential);
-          },
-          cancel_on_tap_outside: false,
-        });
+        if (!_gisInitialized) {
+          _gisInitialized = true;
+          google.accounts.id.initialize({
+            client_id: clientId,
+            callback: function(response) {
+              if (_gisResolve) {
+                _gisResolve(response.credential);
+                _gisResolve = null;
+              }
+            },
+            cancel_on_tap_outside: false,
+            use_fedcm_for_prompt: true,
+          });
+        }
+        _gisResolve = resolve;
         google.accounts.id.prompt(function(notification) {
           if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
             resolve(null);

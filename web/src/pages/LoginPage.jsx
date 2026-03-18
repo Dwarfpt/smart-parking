@@ -47,6 +47,7 @@ export default function LoginPage() {
           setLoading(false);
         }
       },
+      use_fedcm_for_prompt: true,
     });
     window.google.accounts.id.renderButton(
       document.getElementById('google-signin-btn'),
