@@ -1,8 +1,9 @@
 // Список парковок — карта Leaflet, поиск, карточки
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { parkingAPI } from '../services/api';
+import { connectSocket, getSocket } from '../services/socket';
 import { MapPin } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import L from 'leaflet';
@@ -23,12 +24,29 @@ export default function ParkingsPage() {
   const [lots, setLots] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchLots = useCallback(() => {
     parkingAPI.getAll()
       .then((res) => setLots(res.data.parkingLots || []))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    fetchLots();
+    // Polling every 10 seconds for fresh spot counts
+    const interval = setInterval(fetchLots, 10000);
+    return () => clearInterval(interval);
+  }, [fetchLots]);
+
+  // Socket: instant refresh on any spots:update event
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    connectSocket(token);
+    const socket = getSocket();
+    const handler = () => fetchLots();
+    socket?.on('spots:update', handler);
+    return () => { socket?.off('spots:update', handler); };
+  }, [fetchLots]);
 
   if (loading) return <div className="loading"><div className="spinner" /></div>;
 

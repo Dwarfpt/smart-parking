@@ -145,12 +145,14 @@ const handleSpotsUpdate = async (identifier, payload) => {
     }
   }
 
-  // WebSocket-уведомление об изменениях (всем подписчикам парковки)
+  // WebSocket-уведомление об изменениях (всем подписчикам парковки + глобально)
   if (updated.length && ioInstance) {
     const wsPayload = { parkingLotId: parkingLotId.toString(), spots: updated };
     console.log(`[MQTT-SPOTS] WS emit parking:${parkingLotId} → ${updated.length} мест`);
     ioInstance.to(`parking:${parkingLotId}`).emit('spots:update', wsPayload);
     ioInstance.to('admin').emit('spots:update', wsPayload);
+    // Глобальное событие для страницы списка парковок
+    ioInstance.emit('spots:update', wsPayload);
   } else {
     console.log(`[MQTT-SPOTS] Нет изменений (updated=${updated.length}, io=${!!ioInstance})`);
   }

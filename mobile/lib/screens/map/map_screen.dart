@@ -1,4 +1,5 @@
 // Карта — все парковки на карте (flutter_map)
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -19,6 +20,7 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   final MapController _mapCtrl = MapController();
   final _searchCtrl = TextEditingController();
+  Timer? _pollTimer;
 
   // Chișinău center
   static const _defaultCenter = LatLng(47.0245, 28.8322);
@@ -29,10 +31,17 @@ class _MapScreenState extends State<MapScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ParkingProvider>().loadParkingLots();
     });
+    // Polling every 10 seconds for fresh spot counts
+    _pollTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+      if (mounted) {
+        context.read<ParkingProvider>().loadParkingLots();
+      }
+    });
   }
 
   @override
   void dispose() {
+    _pollTimer?.cancel();
     _searchCtrl.dispose();
     super.dispose();
   }
