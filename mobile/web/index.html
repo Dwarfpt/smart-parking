@@ -34,8 +34,28 @@
 
   <!-- Google Sign-In (GIS) для Flutter Web -->
   <meta name="google-signin-client_id" content="600607167879-med62qfl9njdnk3r03jl0stm8aabvj91.apps.googleusercontent.com">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
+  <script>
+    // GIS wrapper — вызывается из Dart через js interop
+    function triggerGoogleSignIn(clientId) {
+      return new Promise(function(resolve) {
+        google.accounts.id.initialize({
+          client_id: clientId,
+          callback: function(response) {
+            resolve(response.credential);
+          },
+          cancel_on_tap_outside: false,
+        });
+        google.accounts.id.prompt(function(notification) {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            resolve(null);
+          }
+        });
+      });
+    }
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
