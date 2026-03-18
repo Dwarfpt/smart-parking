@@ -39,31 +39,73 @@
 <body>
   <script>
     // GIS wrapper — вызывается из Dart через js interop
+    // Используем renderButton + popup вместо prompt/FedCM
     var _gisInitialized = false;
     var _gisResolve = null;
 
     function triggerGoogleSignIn(clientId) {
       return new Promise(function(resolve) {
+        _gisResolve = resolve;
+
         if (!_gisInitialized) {
           _gisInitialized = true;
           google.accounts.id.initialize({
             client_id: clientId,
             callback: function(response) {
+              var overlay = document.getElementById('google-signin-overlay');
+              if (overlay) overlay.remove();
               if (_gisResolve) {
                 _gisResolve(response.credential);
                 _gisResolve = null;
               }
             },
-            cancel_on_tap_outside: false,
-            use_fedcm_for_prompt: true,
           });
         }
-        _gisResolve = resolve;
-        google.accounts.id.prompt(function(notification) {
-          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-            resolve(null);
+
+        // Показываем модальное окно с кнопкой Google
+        var existing = document.getElementById('google-signin-overlay');
+        if (existing) existing.remove();
+
+        var overlay = document.createElement('div');
+        overlay.id = 'google-signin-overlay';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:99999';
+
+        var card = document.createElement('div');
+        card.style.cssText = 'background:#fff;border-radius:16px;padding:32px;text-align:center;min-width:300px;box-shadow:0 8px 32px rgba(0,0,0,0.2)';
+
+        var title = document.createElement('p');
+        title.textContent = 'Войти через Google';
+        title.style.cssText = 'margin:0 0 20px;font-size:16px;color:#333;font-weight:500';
+        card.appendChild(title);
+
+        var btnContainer = document.createElement('div');
+        btnContainer.id = 'g_btn_container';
+        btnContainer.style.cssText = 'display:flex;justify-content:center;margin-bottom:16px';
+        card.appendChild(btnContainer);
+
+        var cancelBtn = document.createElement('button');
+        cancelBtn.textContent = 'Отмена';
+        cancelBtn.style.cssText = 'padding:8px 24px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;color:#666;font-size:14px';
+        cancelBtn.onclick = function() {
+          overlay.remove();
+          if (_gisResolve) { _gisResolve(null); _gisResolve = null; }
+        };
+        card.appendChild(cancelBtn);
+
+        overlay.appendChild(card);
+        overlay.addEventListener('click', function(e) {
+          if (e.target === overlay) {
+            overlay.remove();
+            if (_gisResolve) { _gisResolve(null); _gisResolve = null; }
           }
         });
+
+        document.body.appendChild(overlay);
+
+        google.accounts.id.renderButton(
+          document.getElementById('g_btn_container'),
+          { theme: 'outline', size: 'large', text: 'signin_with', shape: 'rectangular', width: 260 }
+        );
       });
     }
   </script>
