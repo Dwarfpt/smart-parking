@@ -1,25 +1,12 @@
 // Провайдер авторизации — вход, регистрация, OTP, Google OAuth
-import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user.dart';
 import '../services/api_service.dart';
+import '../services/google_sign_in_helper.dart';
 
 class AuthProvider extends ChangeNotifier {
   final ApiService _api = ApiService();
-
-  // Ленивая инициализация — serverClientId нужен на Android для получения idToken
-  GoogleSignIn? _googleSignIn;
-  GoogleSignIn get googleSignIn => _googleSignIn ??= kIsWeb
-      ? GoogleSignIn(
-          scopes: ['email', 'profile'],
-          clientId: '600607167879-med62qfl9njdnk3r03jl0stm8aabvj91.apps.googleusercontent.com',
-        )
-      : GoogleSignIn(
-          scopes: ['email', 'profile'],
-          serverClientId: '600607167879-med62qfl9njdnk3r03jl0stm8aabvj91.apps.googleusercontent.com',
-        );
 
   User? _user;
   bool _loading = true;
@@ -142,16 +129,8 @@ class AuthProvider extends ChangeNotifier {
     _loading = true;
     notifyListeners();
     try {
-      final account = await googleSignIn.signIn();
-      if (account == null) {
-        _loading = false;
-        notifyListeners();
-        return false; // cancelled
-      }
-      final auth = await account.authentication;
-      final idToken = auth.idToken;
+      final idToken = await getGoogleCredential();
       if (idToken == null) {
-        _error = 'Не удалось получить Google токен';
         _loading = false;
         notifyListeners();
         return false;
@@ -180,9 +159,7 @@ class AuthProvider extends ChangeNotifier {
     _user = null;
     _pendingTempToken = null;
     _pendingEmail = null;
-    try {
-      await googleSignIn.signOut();
-    } catch (_) {}
+    await signOutGoogle();
     notifyListeners();
   }
 
