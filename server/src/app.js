@@ -25,6 +25,12 @@ app.use(express.urlencoded({ extended: true }));      // URL-encoded
 app.use(express.raw({ type: 'image/*', limit: '5mb' }));  // Бинарные изображения от ESP32-CAM
 app.use(morgan(config.nodeEnv === 'development' ? 'dev' : 'combined')); // Логирование
 
+// Отключаем кэширование для API (чтобы polling всегда получал свежие данные)
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+
 // Ограничение запросов — общий + строгий для авторизации
 const isDev = config.nodeEnv === 'development';
 app.use('/api/',     rateLimit({ windowMs: 15 * 60_000, max: isDev ? 1000 : 200 }));
