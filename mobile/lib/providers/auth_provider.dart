@@ -9,10 +9,14 @@ import '../services/api_service.dart';
 class AuthProvider extends ChangeNotifier {
   final ApiService _api = ApiService();
 
-  // Ленивая инициализация — на Web без client_id GoogleSignIn крэшится
+  // Ленивая инициализация — serverClientId нужен на Android для получения idToken
   GoogleSignIn? _googleSignIn;
   GoogleSignIn get googleSignIn =>
-      _googleSignIn ??= GoogleSignIn(scopes: ['email', 'profile']);
+      _googleSignIn ??= GoogleSignIn(
+        scopes: ['email', 'profile'],
+        // Web Client ID — нужен на Android чтобы idToken был не null
+        serverClientId: '600607167879-med62qfl9njdnk3r03jl0stm8aabvj91.apps.googleusercontent.com',
+      );
 
   User? _user;
   bool _loading = true;
