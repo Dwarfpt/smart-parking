@@ -1,5 +1,5 @@
 // Провайдер авторизации — вход, регистрация, OTP, Google OAuth
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -11,12 +11,15 @@ class AuthProvider extends ChangeNotifier {
 
   // Ленивая инициализация — serverClientId нужен на Android для получения idToken
   GoogleSignIn? _googleSignIn;
-  GoogleSignIn get googleSignIn =>
-      _googleSignIn ??= GoogleSignIn(
-        scopes: ['email', 'profile'],
-        // Web Client ID — нужен на Android чтобы idToken был не null
-        serverClientId: '600607167879-med62qfl9njdnk3r03jl0stm8aabvj91.apps.googleusercontent.com',
-      );
+  GoogleSignIn get googleSignIn => _googleSignIn ??= kIsWeb
+      ? GoogleSignIn(
+          scopes: ['email', 'profile'],
+          clientId: '600607167879-med62qfl9njdnk3r03jl0stm8aabvj91.apps.googleusercontent.com',
+        )
+      : GoogleSignIn(
+          scopes: ['email', 'profile'],
+          serverClientId: '600607167879-med62qfl9njdnk3r03jl0stm8aabvj91.apps.googleusercontent.com',
+        );
 
   User? _user;
   bool _loading = true;
