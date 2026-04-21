@@ -17,6 +17,9 @@ const bookingSchema = new mongoose.Schema(
 
     // Уникальный токен для QR-кода
     qrToken: { type: String, unique: true, sparse: true },
+
+    // Флаг: находится ли машина на парковке (для одной камеры)
+    inLot: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
@@ -24,7 +27,7 @@ const bookingSchema = new mongoose.Schema(
 // Автоматическая генерация QR-токена при создании
 bookingSchema.pre('save', function () {
   if (!this.qrToken) {
-    this.qrToken = crypto.randomBytes(32).toString('hex');
+    this.qrToken = crypto.randomBytes(20).toString('hex');
   }
 });
 

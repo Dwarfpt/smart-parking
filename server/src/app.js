@@ -33,8 +33,8 @@ app.use('/api', (req, res, next) => {
 
 // Ограничение запросов — общий + строгий для авторизации
 const isDev = config.nodeEnv === 'development';
-app.use('/api/',     rateLimit({ windowMs: 15 * 60_000, max: isDev ? 1000 : 200 }));
-app.use('/api/auth', rateLimit({ windowMs: 15 * 60_000, max: isDev ? 100  : 30  }));
+app.use('/api/',     rateLimit({ windowMs: 15 * 60_000, max: 5000 }));
+app.use('/api/auth', rateLimit({ windowMs: 15 * 60_000, max: 200  }));
 
 // ——————————— Маршруты API ———————————
 

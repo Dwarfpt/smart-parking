@@ -284,7 +284,7 @@ export default function ProfilePage() {
               {activeBookings.filter(b => b.qrToken).map(b => (
                 <div key={b._id} style={{ textAlign: 'center', padding: 16, border: '1px solid var(--border-color)', borderRadius: 'var(--radius)' }}>
                   <QRCodeSVG
-                    value={`smartparking://validate/${b.qrToken}`}
+                    value={b.qrToken}
                     size={180}
                     level="H"
                     includeMargin

@@ -431,6 +431,10 @@ router.put('/:id/cancel', async (req, res) => {
       return res.status(404).json({ message: 'Active booking not found.' });
     }
 
+    if (booking.inLot) {
+      return res.status(400).json({ message: 'Невозможно отменить бронь: машина всё ещё физически находится на парковке.' });
+    }
+
     // Рассчитываем возврат
     let refundAmount = 0;
     const now = new Date();

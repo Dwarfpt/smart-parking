@@ -121,7 +121,7 @@ export default function MyBookingsPage() {
                 <div style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '16px 0', borderTop: '1px solid var(--border-color)', marginTop: 8 }}>
                   <div style={{ textAlign: 'center' }}>
                     <QRCodeSVG
-                      value={`smartparking://validate/${b.qrToken}`}
+                      value={b.qrToken}
                       size={200}
                       level="H"
                       includeMargin
