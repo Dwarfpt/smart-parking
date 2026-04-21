@@ -1,5 +1,6 @@
 // Мои бронирования — список, QR-коды, отмена
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../providers/booking_provider.dart';
@@ -188,7 +189,31 @@ class _BookingCard extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     color: AppTheme.primary)),
             if (booking.isActive) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.gray200),
+                  ),
+                  child: QrImageView(
+                    data: booking.qrToken ?? booking.id,
+                    version: QrVersions.auto,
+                    size: 140.0,
+                    backgroundColor: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Center(
+                 child: Text(
+                   loc.t('bookingsScanQR') ?? 'Отсканируйте код при въезде',
+                   style: const TextStyle(fontSize: 12, color: AppTheme.gray500),
+                 ),
+              ),
+              const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
