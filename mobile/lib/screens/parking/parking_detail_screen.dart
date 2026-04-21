@@ -258,7 +258,7 @@ class _ParkingDetailScreenState extends State<ParkingDetailScreen> {
                             style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: selected ? Colors.white : AppTheme.gray800)),
+                                color: selected ? Colors.white : AppTheme.gray700)),
                       ],
                     ),
                   ),

@@ -117,7 +117,7 @@ class _MapScreenState extends State<MapScreen> {
                                     style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
-                                        color: isDark ? Colors.white : AppTheme.gray800),
+                                        color: isDark ? Colors.white : AppTheme.gray700),
                                     overflow: TextOverflow.ellipsis),
                                 const SizedBox(height: 2),
                                 Text(
@@ -218,7 +218,7 @@ class _MapScreenState extends State<MapScreen> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
-                        color: isDark ? Colors.white : AppTheme.gray800,
+                        color: isDark ? Colors.white : AppTheme.gray700,
                       ),
                     ),
                     onSelected: (l) => loc.setLang(l),

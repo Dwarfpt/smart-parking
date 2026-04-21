@@ -147,7 +147,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                       isMe ? Colors.white70 : AppTheme.gray500)),
                         Text(msg.text,
                             style: TextStyle(
-                                color: isMe ? Colors.white : (isDark ? Colors.white : AppTheme.gray800))),
+                                color: isMe ? Colors.white : (isDark ? Colors.white : AppTheme.gray700))),
                       ],
                     ),
                   ),

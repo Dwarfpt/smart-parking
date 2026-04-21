@@ -37,6 +37,7 @@ class _HomeShellState extends State<HomeShell> {
   Widget build(BuildContext context) {
     final loc = context.watch<LocaleProvider>();
     final themeProvider = context.watch<ThemeProvider>();
+    final isDark = themeProvider.isDark;
     final titles = _titles(loc);
 
     return Scaffold(
@@ -55,10 +56,10 @@ class _HomeShellState extends State<HomeShell> {
                 PopupMenuButton<String>(
                   icon: Text(
                     LocaleProvider.labels[loc.lang] ?? 'RU',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
-                      color: Colors.white,
+                      color: isDark ? Colors.white : AppTheme.gray700,
                     ),
                   ),
                   onSelected: (l) => loc.setLang(l),
@@ -84,32 +85,54 @@ class _HomeShellState extends State<HomeShell> {
         index: _currentIndex,
         children: _screens,
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (i) => setState(() => _currentIndex = i),
-        indicatorColor: AppTheme.primary.withAlpha(30),
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.map_outlined),
-            selectedIcon: const Icon(Icons.map, color: AppTheme.primary),
-            label: loc.t('navMap'),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).navigationBarTheme.backgroundColor,
+          border: Border(
+            top: BorderSide(
+              color: isDark ? AppTheme.darkBorder : AppTheme.gray200,
+              width: 1,
+            ),
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.bookmark_outline),
-            selectedIcon: const Icon(Icons.bookmark, color: AppTheme.primary),
-            label: loc.t('navBookings'),
+          boxShadow: [
+            BoxShadow(
+              color: isDark ? Colors.black.withAlpha(50) : AppTheme.gray300.withAlpha(80),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        // Use SafeArea carefully to only pad the BOTTOM to avoid OS nav bar overlaps
+        child: SafeArea(
+          bottom: true,
+          top: false,
+          child: NavigationBar(
+            selectedIndex: _currentIndex,
+            onDestinationSelected: (i) => setState(() => _currentIndex = i),
+            destinations: [
+              NavigationDestination(
+                icon: const Icon(Icons.map_outlined),
+                selectedIcon: const Icon(Icons.map),
+                label: loc.t('navMap'),
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.bookmark_outline),
+                selectedIcon: const Icon(Icons.bookmark),
+                label: loc.t('navBookings'),
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.support_agent_outlined),
+                selectedIcon: const Icon(Icons.support_agent),
+                label: loc.t('navSupport'),
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.person_outline),
+                selectedIcon: const Icon(Icons.person),
+                label: loc.t('navProfile'),
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.support_agent_outlined),
-            selectedIcon: const Icon(Icons.support_agent, color: AppTheme.primary),
-            label: loc.t('navSupport'),
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.person_outline),
-            selectedIcon: const Icon(Icons.person, color: AppTheme.primary),
-            label: loc.t('navProfile'),
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -57,8 +57,24 @@ export default function LoginPage() {
 
   return (
     <div className="auth-page">
+      {/* Animated background elements */}
+      <div className="auth-orb" />
+      <div className="auth-grid" />
+
       <div className="auth-card">
-        <h1 className="auth-title"><img src="/logo.svg" alt="" style={{ height: 40, verticalAlign: 'middle', marginRight: 8 }} />Smart Parking</h1>
+        <h1 className="auth-title">
+          <img
+            src="/logo.svg"
+            alt=""
+            style={{
+              height: 44,
+              verticalAlign: 'middle',
+              marginRight: 10,
+              filter: 'drop-shadow(0 4px 12px rgba(99,102,241,0.4))'
+            }}
+          />
+          Smart Parking
+        </h1>
         <p className="auth-subtitle">{t('authLogin')}</p>
 
         {error && <div className="alert alert-error">{error}</div>}
@@ -92,15 +108,11 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '16px 0' }}>
-          <div style={{ flex: 1, height: 1, background: 'var(--border-color)' }} />
-          <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{t('or')}</span>
-          <div style={{ flex: 1, height: 1, background: 'var(--border-color)' }} />
-        </div>
+        <div className="divider">{t('or')}</div>
 
         <div id="google-signin-btn" style={{ display: 'flex', justifyContent: 'center' }} />
 
-        <p style={{ textAlign: 'center', marginTop: 16, fontSize: '0.9rem' }}>
+        <p style={{ textAlign: 'center', marginTop: 20, fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)' }}>
           {t('authNoAccount')} <Link to="/register">{t('authRegisterLink')}</Link>
         </p>
       </div>
