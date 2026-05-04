@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "author": "Smart Parking — Barrier Controller",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-esp32-devkit-v1",
+      "id": "esp",
+      "top": 165.7,
+      "left": 3.6,
+      "rotate": 180,
+      "attrs": {}
+    },
+    { "type": "wokwi-pir-motion-sensor", "id": "ir1", "top": 80.8, "left": 184.6, "attrs": {} },
+    { "type": "wokwi-pir-motion-sensor", "id": "ir2", "top": 80.8, "left": 280.6, "attrs": {} },
+    { "type": "wokwi-pir-motion-sensor", "id": "ir3", "top": 80.8, "left": 376.6, "attrs": {} },
+    { "type": "wokwi-pir-motion-sensor", "id": "ir4", "top": 90.4, "left": 501.4, "attrs": {} },
+    { "type": "wokwi-servo", "id": "servo1", "top": 401.2, "left": -9.6, "attrs": {} }
+  ],
+  "connections": [
+    [ "esp:TX0",  "$serialMonitor:RX", "", [] ],
+    [ "esp:RX0",  "$serialMonitor:TX", "", [] ],
+
+    [ "ir1:VCC", "esp:VIN",   "red",    [ "v0" ] ],
+    [ "ir1:GND", "esp:GND.2", "black",  [ "v0" ] ],
+    [ "ir1:OUT", "esp:D32",   "yellow", [ "v0" ] ],
+
+    [ "ir2:VCC", "esp:VIN",   "red",    [ "v0" ] ],
+    [ "ir2:GND", "esp:GND.2", "black",  [ "v0" ] ],
+    [ "ir2:OUT", "esp:D33",   "gray",   [ "v0" ] ],
+
+    [ "ir3:VCC", "esp:VIN",   "red",    [ "v0" ] ],
+    [ "ir3:GND", "esp:GND.2", "black",  [ "v0" ] ],
+    [ "ir3:OUT", "esp:D34",   "violet", [ "v0" ] ],
+
+    [ "ir4:VCC", "esp:VIN",   "red",    [ "v0" ] ],
+    [ "ir4:GND", "esp:GND.2", "black",  [ "v0" ] ],
+    [ "ir4:OUT", "esp:D35",   "orange", [ "v0" ] ],
+
+    [ "servo1:V+",  "esp:VIN",  "red",   [ "v0", "h-66.9", "v249.6" ] ],
+    [ "servo1:GND", "esp:GND.1", "black", [ "h-57.6", "v-288" ] ],
+    [ "servo1:PWM", "esp:D25",   "gold",  [ "h-67.2", "v-191.8" ] ]
+  ],
+  "dependencies": {}
+}

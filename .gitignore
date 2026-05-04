@@ -1,0 +1,25 @@
+# Зависимости
+node_modules/
+
+# Переменные окружения (секреты)
+.env
+server/.env
+web/.env
+
+# IDE и редакторы
+.vscode/
+.idea/
+
+# Конфигурации инструментов
+.github/
+.codacy/
+
+# Кэш
+.vite/
+
+# Логи
+*.log
+
+# PlatformIO build artifacts
+esp32/**/.pio/
+esp32/**/build/

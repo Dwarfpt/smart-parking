@@ -1,0 +1,39 @@
+// Пользовательский layout — навбар с личными ссылками
+import { Link, NavLink, Outlet } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { Wallet } from 'lucide-react';
+import ThemeToggle from '../ThemeToggle';
+import LanguageSwitcher from '../LanguageSwitcher';
+import { useLanguage } from '../../context/LanguageContext';
+
+export default function UserLayout() {
+  const { user, isAdmin, logout } = useAuth();
+  const { t } = useLanguage();
+
+  return (
+    <div className="main-content">
+      <header className="header">
+        <Link to="/" className="header-logo">
+          <img src="/logo.svg" alt="Smart Parking" style={{ height: 28 }} /> Smart Parking
+        </Link>
+        <nav className="header-nav">
+          <NavLink to="/parkings">{t('navParkings')}</NavLink>
+          <NavLink to="/about">{t('navAbout')}</NavLink>
+          <NavLink to="/my-bookings">{t('navBookings')}</NavLink>
+          <NavLink to="/support">{t('navSupport')}</NavLink>
+          <NavLink to="/profile">{t('navProfile')}</NavLink>
+          {isAdmin && <NavLink to="/admin">{t('navAdmin')}</NavLink>}
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--secondary)', fontWeight: 600, fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+            <Wallet size={14} /> {user?.balance?.toFixed(2) || '0.00'} MDL
+          </span>
+          <LanguageSwitcher />
+          <ThemeToggle />
+          <button className="btn btn-sm btn-secondary" onClick={logout}>
+            {t('navLogout')}
+          </button>
+        </nav>
+      </header>
+      <Outlet />
+    </div>
+  );
+}

@@ -1,0 +1,123 @@
+// Список парковок — карта Leaflet, поиск, карточки
+import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { parkingAPI } from '../services/api';
+import { connectSocket, getSocket } from '../services/socket';
+import { MapPin } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import L from 'leaflet';
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+// Leaflet — используем локальные иконки вместо CDN (CDN блокируется Tracking Prevention)
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+});
+
+export default function ParkingsPage() {
+  const { t, loc } = useLanguage();
+  const [lots, setLots] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchLots = useCallback(() => {
+    parkingAPI.getAll()
+      .then((res) => setLots(res.data.parkingLots || []))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetchLots();
+    // Polling every 10 seconds for fresh spot counts
+    const interval = setInterval(fetchLots, 10000);
+    return () => clearInterval(interval);
+  }, [fetchLots]);
+
+  // Socket: instant refresh on any spots:update event
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    connectSocket(token);
+    const socket = getSocket();
+    const handler = () => fetchLots();
+    socket?.on('spots:update', handler);
+    return () => { socket?.off('spots:update', handler); };
+  }, [fetchLots]);
+
+  if (loading) return <div className="loading"><div className="spinner" /></div>;
+
+  return (
+    <div className="page">
+      <h2 style={{ marginBottom: 20 }}>
+        <MapPin size={24} style={{ verticalAlign: 'middle' }} /> {t('parkingsMapTitle')}
+      </h2>
+
+      <div className="map-container" style={{ marginBottom: 24 }}>
+        <MapContainer
+          center={[47.0245, 28.8297]}
+          zoom={13}
+          style={{ height: '100%', width: '100%' }}
+        >
+          <TileLayer
+            attribution='&copy; OpenStreetMap'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          {lots.map((lot) => (
+            <Marker
+              key={lot._id}
+              position={[
+                lot.location?.coordinates?.[1] || 47.02,
+                lot.location?.coordinates?.[0] || 28.83,
+              ]}
+            >
+              <Popup>
+                <strong>{loc(lot, 'name')}</strong>
+                <br />
+                {loc(lot, 'address')}
+                <br />
+                {t('freeSpotsLabel')}: <strong>{lot.freeSpots}</strong> / {lot.totalSpots}
+                <br />
+                {lot.tariff && <>{t('priceLabel')}: {lot.tariff.pricePerHour} MDL/{t('perHour').replace('/', '')}<br /></>}
+                <Link to={`/parking/${lot._id}`}>{t('moreDetails')} →</Link>
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
+        {lots.map((lot) => (
+          <div key={lot._id} className="card">
+            <h3>{loc(lot, 'name')}</h3>
+            <p style={{ color: 'var(--gray-500)', fontSize: '0.9rem', margin: '6px 0' }}>
+              {loc(lot, 'address')}
+            </p>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+              <span className="badge badge-green">{lot.freeSpots} {t('freeLabel')}</span>
+              <span className="badge badge-red">{lot.occupiedSpots || 0} {t('occupiedLabel')}</span>
+              <span className="badge badge-yellow">{lot.reservedSpots || 0} {t('reservedLabel')}</span>
+            </div>
+            {lot.tariff && (
+              <p style={{ fontSize: '0.9rem', marginBottom: 8 }}>
+                💰 {lot.tariff.pricePerHour} MDL{t('perHour')} • {t('subscription')} {t('from')} {lot.tariff.subscriptionWeek} MDL{t('perWeek')}
+              </p>
+            )}
+            <p style={{ fontSize: '0.85rem', color: 'var(--gray-500)', marginBottom: 12 }}>
+              🕐 {lot.workingHours?.open} – {lot.workingHours?.close}
+            </p>
+            <Link to={`/parking/${lot._id}`} className="btn btn-primary btn-sm">
+              {t('chooseSpot')}
+            </Link>
+          </div>
+        ))}
+        {lots.length === 0 && (
+          <p style={{ color: 'var(--gray-500)' }}>{t('noParkings')}</p>
+        )}
+      </div>
+    </div>
+  );
+}

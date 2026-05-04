@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A new Flutter project.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="smart_parking">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>Smart Parking</title>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Google Sign-In (GIS) для Flutter Web -->
+  <meta name="google-signin-client_id" content="600607167879-med62qfl9njdnk3r03jl0stm8aabvj91.apps.googleusercontent.com">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <script>
+    // GIS wrapper — вызывается из Dart через js interop
+    // Используем renderButton + popup вместо prompt/FedCM
+    var _gisInitialized = false;
+    var _gisResolve = null;
+
+    function triggerGoogleSignIn(clientId) {
+      return new Promise(function(resolve) {
+        _gisResolve = resolve;
+
+        if (!_gisInitialized) {
+          _gisInitialized = true;
+          google.accounts.id.initialize({
+            client_id: clientId,
+            callback: function(response) {
+              var overlay = document.getElementById('google-signin-overlay');
+              if (overlay) overlay.remove();
+              if (_gisResolve) {
+                _gisResolve(response.credential);
+                _gisResolve = null;
+              }
+            },
+          });
+        }
+
+        // Показываем модальное окно с кнопкой Google
+        var existing = document.getElementById('google-signin-overlay');
+        if (existing) existing.remove();
+
+        var overlay = document.createElement('div');
+        overlay.id = 'google-signin-overlay';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:99999';
+
+        var card = document.createElement('div');
+        card.style.cssText = 'background:#fff;border-radius:16px;padding:32px;text-align:center;min-width:300px;box-shadow:0 8px 32px rgba(0,0,0,0.2)';
+
+        var title = document.createElement('p');
+        title.textContent = 'Войти через Google';
+        title.style.cssText = 'margin:0 0 20px;font-size:16px;color:#333;font-weight:500';
+        card.appendChild(title);
+
+        var btnContainer = document.createElement('div');
+        btnContainer.id = 'g_btn_container';
+        btnContainer.style.cssText = 'display:flex;justify-content:center;margin-bottom:16px';
+        card.appendChild(btnContainer);
+
+        var cancelBtn = document.createElement('button');
+        cancelBtn.textContent = 'Отмена';
+        cancelBtn.style.cssText = 'padding:8px 24px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;color:#666;font-size:14px';
+        cancelBtn.onclick = function() {
+          overlay.remove();
+          if (_gisResolve) { _gisResolve(null); _gisResolve = null; }
+        };
+        card.appendChild(cancelBtn);
+
+        overlay.appendChild(card);
+        overlay.addEventListener('click', function(e) {
+          if (e.target === overlay) {
+            overlay.remove();
+            if (_gisResolve) { _gisResolve(null); _gisResolve = null; }
+          }
+        });
+
+        document.body.appendChild(overlay);
+
+        google.accounts.id.renderButton(
+          document.getElementById('g_btn_container'),
+          { theme: 'outline', size: 'large', text: 'signin_with', shape: 'rectangular', width: 260 }
+        );
+      });
+    }
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
