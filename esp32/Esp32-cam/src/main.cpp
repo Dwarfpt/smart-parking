@@ -135,6 +135,19 @@ void loop() {
         if (cameraOk) captureFailStreak = 0;
     }
 
+    // --- ОТЛАДОЧНАЯ ИНФОРМАЦИЯ (каждые 10 секунд) ---
+    static unsigned long lastDebugLog = 0;
+    if (now - lastDebugLog >= 10000) {
+        lastDebugLog = now;
+        
+        float temp = temperatureRead(); // Внутренняя температура чипа
+        uint32_t freeHeap = ESP.getFreeHeap();
+        int rssi = WiFi.RSSI();
+        
+        Serial.printf("[DEBUG] Температура: %.1f°C | Свободная память: %d байт | WiFi Сигнал: %d dBm | Ошибок подряд: %d\n", 
+                      temp, freeHeap, rssi, captureFailStreak);
+    }
+
     // Авто-рестарт при серии ошибок захвата
     if (captureFailStreak >= CAPTURE_FAIL_LIMIT) {
         Serial.printf("[CAM] %d ошибок подряд — перезагрузка\n", captureFailStreak);

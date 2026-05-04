@@ -118,64 +118,68 @@ void initOLED() {
 
 void updateOLED() {
     oled.clearDisplay();
+
+    // === ЖЁЛТАЯ ЗОНА (y=0-15): Заголовок ===
     oled.setTextColor(SSD1306_WHITE);
     oled.setTextSize(1);
-
-    // === Жёлтая зона (верхние 16px) — Заголовок ===
     oled.setCursor(16, 4);
     oled.print("SMART PARKING");
     oled.drawLine(0, 15, 127, 15, SSD1306_WHITE);
 
-    // === Синяя зона (16-63) — Статус мест ===
-    int freeCount = 0, occCount = 0, rsvCount = 0;
-
+    // === СЕТКА МЕСТ 2x2 (y=16-51) ===
+    // P1 | P2   y=16-33  (18px)
+    // P3 | P4   y=34-51  (18px)
     for (int i = 0; i < SPOT_COUNT; i++) {
         int col = i % 2;
         int row = i / 2;
-        int x = col * 64 + 2;
-        int y = 18 + row * 12;
+        int cx = col * 64;
+        int cy = 16 + row * 18;
 
-        // Иконка состояния (квадрат 6x6)
-        if (spots[i].occupied) {
-            oled.fillRect(x, y + 1, 6, 6, SSD1306_WHITE);   // ■ занято
-            occCount++;
-        } else if (spotReserved[i]) {
-            oled.drawRect(x, y + 1, 6, 6, SSD1306_WHITE);   // □ с X
-            oled.drawLine(x, y + 1, x + 5, y + 6, SSD1306_WHITE);
-            oled.drawLine(x + 5, y + 1, x, y + 6, SSD1306_WHITE);
-            rsvCount++;
+        bool occ = spots[i].occupied;
+        bool rsv = spotReserved[i];
+        const char* st = occ ? "OCC" : (rsv ? "RSV" : "FREE");
+
+        if (occ) {
+            // ЗАНЯТО — белый блок, чёрный текст
+            oled.fillRect(cx, cy, 63, 18, SSD1306_WHITE);
+            oled.setTextColor(SSD1306_BLACK);
         } else {
-            oled.drawRect(x, y + 1, 6, 6, SSD1306_WHITE);   // □ свободно
-            freeCount++;
+            // СВОБОДНО / ЗАБРОНИРОВАНО — рамка, белый текст
+            oled.drawRect(cx, cy, 63, 18, SSD1306_WHITE);
+            oled.setTextColor(SSD1306_WHITE);
         }
 
-        // Текст
-        oled.setCursor(x + 9, y);
-        oled.printf("P%d:", spots[i].spotNumber);
-        if (spots[i].occupied)       oled.print("OCC");
-        else if (spotReserved[i])    oled.print("RSV");
-        else                         oled.print("FREE");
+        // Номер места — маленький, левый верхний угол
+        oled.setTextSize(1);
+        oled.setCursor(cx + 2, cy + 2);
+        oled.printf("P%d", spots[i].spotNumber);
+
+        // Статус — крупный, по центру (textSize 2 = 12x16px)
+        oled.setTextSize(2);
+        int tw = strlen(st) * 12;
+        oled.setCursor(cx + (63 - tw) / 2, cy + 1);
+        oled.print(st);
     }
 
-    // === Итого ===
-    oled.setCursor(0, 44);
-    oled.printf("Free:%d Occ:%d Rsv:%d", freeCount, occCount, rsvCount);
+    // Вертикальный разделитель колонок
+    oled.setTextColor(SSD1306_WHITE);
+    oled.drawLine(63, 16, 63, 51, SSD1306_WHITE);
 
-    // === Шлагбаум + статус ===
-    oled.setCursor(0, 55);
+    // === НИЖНЯЯ СТРОКА (y=53-63): краткая инфо ===
+    oled.drawLine(0, 52, 127, 52, SSD1306_WHITE);
+    oled.setTextSize(1);
+    oled.setCursor(0, 56);
     if (barrierOpen) {
-        oled.print("Bar:OPEN");
-        if (carUnderBarrier) oled.print(" [CAR!]");
+        oled.print(carUnderBarrier ? "BAR:OPEN [CAR]" : "BAR: OPEN");
     } else {
-        oled.print("Bar:CLOSED");
+        oled.print("BAR: CLOSED");
     }
-
-    // MQTT индикатор
-    oled.setCursor(104, 55);
-    oled.print(mqtt.connected() ? "M:+" : "M:-");
+    oled.setCursor(110, 56);
+    oled.print(mqtt.connected() ? "M+" : "M-");
 
     oled.display();
 }
+
 
 // ===================== Шлагбаум (сервопривод) =====================
 

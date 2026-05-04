@@ -26,13 +26,13 @@
 #define WIFI_TIMEOUT_MS  15000
 
 // ===================== Статический IP =====================
-#define STATIC_IP        10,84,197,50
-#define STATIC_GATEWAY   10,84,197,107
+#define STATIC_IP        10,27,14,50
+#define STATIC_GATEWAY   10,27,14,207
 #define STATIC_SUBNET    255,255,255,0
 #define STATIC_DNS       8,8,8,8
 
 // ===================== MQTT =====================
-#define MQTT_BROKER      "10.84.197.123"
+#define MQTT_BROKER      "10.27.14.123"
 #define MQTT_PORT        1883
 #define MQTT_CLIENT_ID   "esp32-barrier-01"
 
@@ -63,7 +63,7 @@
 #define IR_SENSOR_1_PIN  26   // Место 1
 #define IR_SENSOR_2_PIN  27   // Место 2
 #define IR_SENSOR_3_PIN  14   // Место 3
-#define IR_SENSOR_4_PIN  12   // Место 4
+#define IR_SENSOR_4_PIN  25   // Место 4
 
 // ===================== Сервопривод SG90 =====================
 #define SERVO_PIN            13

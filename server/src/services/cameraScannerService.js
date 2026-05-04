@@ -20,8 +20,8 @@ const { getIO }    = require('./wsService');
 const { openBarrier, closeBarrier } = require('./mqttService');
 
 // ——————————— Конфигурация камер ———————————
-const CAMERA_ENTRY_URL     = process.env.CAMERA_URL || 'http://192.168.100.48';
-const CAMERA_EXIT_URL      = process.env.CAMERA_EXIT_URL || 'http://192.168.100.49';
+const CAMERA_ENTRY_URL     = process.env.CAMERA_URL || 'http://10.27.14.48';
+const CAMERA_EXIT_URL      = process.env.CAMERA_EXIT_URL || 'http://10.27.14.48';
 
 // Plate Recognizer API (закомментировано)
 // const PLATE_API_TOKEN      = process.env.PLATE_RECOGNIZER_TOKEN || '';
@@ -38,9 +38,9 @@ const cameras = [
   }
 ];
 
-const SCAN_INTERVAL_MS     = 2000;
-const FETCH_TIMEOUT_MS     = 8000;
-const QR_DEDUP_MS          = 10000;  // Не сканировать тот же QR подряд
+const SCAN_INTERVAL_MS     = 2000;   // Интервал опроса камеры (мс)
+const FETCH_TIMEOUT_MS     = 5000;   // Таймаут HTTP-запроса к камере (мс)
+const QR_DEDUP_MS          = 10000;  // Игнорировать повторный QR в течение N мс
 
 // Состояние
 const lastQR    = new Map();    // камера → { value, time }
@@ -156,11 +156,9 @@ async function handleQRResult(qrValue, jpegBuffer, cam) {
   if (result.accessGranted) {
     const booking = result.bookingDoc;
     
-    // ОТКРЫТИЕ ШЛАГБАУМА (3 попытки с интервалом 1 сек — гарантия доставки)
+    // ОТКРЫТИЕ ШЛАГБАУМА
     openBarrier(cam.lotId);
     console.log(`[BARRIER] 🔓 ${cam.lotId} — шлагбаум открыт (QR ✅)`);
-    setTimeout(() => openBarrier(cam.lotId), 1000);
-    setTimeout(() => openBarrier(cam.lotId), 2000);
 
     // МЕНЯЕМ СТАТУС ВЪЕЗДА
     booking.inLot = result.isEntering;
@@ -238,7 +236,8 @@ async function scanCamera(cam) {
 let scanTimers = [];
 
 function startCameraScanner() {
-  console.log(`[SCAN] Запуск (${cameras.length} камер, QR каждые ${SCAN_INTERVAL_MS / 1000}с, номера ВЫКЛ)`);
+  cameras.forEach(c => console.log(`[SCAN] Камера: ${c.id} → ${c.url}`));
+  console.log(`[SCAN] Запуск: ${cameras.length} камер, интервал ${SCAN_INTERVAL_MS}мс, таймаут ${FETCH_TIMEOUT_MS}мс`);
 
   for (const cam of cameras) {
     const timer = setInterval(() => scanCamera(cam), SCAN_INTERVAL_MS);
